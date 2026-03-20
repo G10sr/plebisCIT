@@ -1,30 +1,38 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../assets/css/header.css";
+import Logo from "../assets/img/logo.png";
 
 function Header() {
-
     const location = useLocation();
-    const [text, setText] = useState({
-        alt: "Armonía Logo Foto",
-        option1: "Home",
-        option2: "Productos",
-    });
+    const navigate = useNavigate();
+    const [text, setText] = useState({ 
+        alt: "PlebisCIT logo", 
+        option1: "Administrador >", 
+        option2: "< Volver" });
+
+    const isAdmin = location.pathname === "/admin";
 
     return (
         <header>
-            <div id="button-Div">
-                <Link to="/">
-                    <button className={`btn ${location.pathname === "/" ? "active" : ""}`}>{text.option1}</button>
+            <img src={Logo} alt="PlebisCIT logo" />
+
+            {isAdmin ? (
+                <button
+                    className="btn active"
+                    onClick={() => navigate(-1)}
+                >
+                    {text.option2}
+                </button>
+            ) : (
+                <Link to="/admin">
+                    <button className="btn">
+                        {text.option1}
+                    </button>
                 </Link>
-                <Link to="/productos">
-                    <button className={`btn ${location.pathname === "/productos" ? "active" : ""}`}>{text.option2}</button>
-                </Link>
-            </div>
+            )}
         </header>
     );
 }
-export default Header;
 
-//contador del carrito en el header
-{}
+export default Header;
