@@ -6,7 +6,7 @@ function Header() {
 
     const location = useLocation();
     const [text, setText] = useState({
-        alt: "Armonía Logo Foto",
+        alt: "PlebisCIT logo",
         option1: "Home",
         option2: "Productos",
     });
