@@ -11,7 +11,10 @@
 }
 
 .fondo-container h2{
-  font-size: 20px;
+  font-size: 30px;
+  font-weight: 400;
+  margin-top: 0px;
+  margin-bottom: 7px;
 }
 
 .fondo-container p{
@@ -34,4 +37,17 @@
 
 #idSpace {
   text-align: left;       /* texto alineado a la izquierda */
+}
+
+.fondo-container button{
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  width: 300px;
+  color: #A63F3F;
+  background-color: #FF7B7B;
+  padding: 8px;
+  border-width: 0cm;
+  border-radius: 5px;
+  font-family: 'Outfit', sans-serif;
+  z-index: 10;
 }

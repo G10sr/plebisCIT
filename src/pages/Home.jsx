@@ -38,7 +38,7 @@ function Home() {
                     </div>
                     <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
                     </p>
-                    <p></p>
+                    <button name="startVote">Iniciar Voto</button>
                 </div>
             </div>
 
@@ -62,7 +62,7 @@ const styles = {
     modal: {
         background: "#fff",
         padding: "20px",
-        borderRadius: "25px",
+        borderRadius: "20px",
         minWidth: "450px",
         position: "relative",
         border: "2px solid #b4b4b4",
