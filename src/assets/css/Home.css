@@ -2,7 +2,7 @@
 .fondo-container {
   background-size: cover;
   background-position: center;
-  height: 100vh;
+  height: auto;
   width: 100%;
   position: absolute; /* o fixed */
     left: 0;

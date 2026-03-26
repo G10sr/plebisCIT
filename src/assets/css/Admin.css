@@ -1,0 +1,7 @@
+.fondo-container {
+  background-image: url('./assets/css/CRvotos.png');
+  background-size: cover;
+  background-position: center;
+  height: auto;
+  width: 100%;
+}
