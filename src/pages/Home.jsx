@@ -4,7 +4,10 @@ import "../assets/css/Home.css"
 
 function Home(){
     return(
-        <div className="fondo-container">Contenido</div>
+        <div className="fondo-container">
+            
+            
+        </div>
     );
 }
 
