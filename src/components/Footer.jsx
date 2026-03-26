@@ -4,7 +4,7 @@ function Footer(){
     return(
         <div id="Footer">
             
-            <p>PlebisCIT<br /> Todos los derechos reservados<br/></p>
+            <p>PlebisCIT©<br /> Todos los derechos reservados<br/></p>
         </div>
     )
 }
