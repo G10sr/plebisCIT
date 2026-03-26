@@ -20,6 +20,7 @@
 }
 
 .fondo-container input{
+  font-family: 'Outfit', sans-serif;
   font-size: 13px;
   width: 300px;
   background-color: rgb(211, 211, 211);
