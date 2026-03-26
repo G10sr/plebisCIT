@@ -9,12 +9,7 @@ function Home() {
     return (
         <div
             className="fondo-container"
-            style={{
-                backgroundImage: `
-      linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),
-      url(${img})
-    `
-            }}
+            style={{backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),url(${img})`}}
         >
 
             {/* Modal - */}
@@ -48,11 +43,11 @@ function Home() {
 }
 const styles = {
     overlay: {
-        position: "fixed",
+        position: "relative",
         top: 0,
         left: 0,
         width: "100%",
-        height: "100%",
+        height: "100vh",
         backgroundColor: "rgba(0, 0, 0, 0)",
         display: "flex",
         justifyContent: "center",
