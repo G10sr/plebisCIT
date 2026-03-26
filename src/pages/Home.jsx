@@ -5,6 +5,8 @@ import "../assets/css/Home.css"
 
 function Home() {
     const [isOpen, setIsOpen] = useState(true); // 👈 ahora inicia abierto
+    const [idUser, setIdUser] = useState("");
+
 
     return (
         <div
@@ -28,9 +30,12 @@ function Home() {
                     </h2>
                     <div id="idSpace">
                         <p>Ingresa tu identificación:</p>
-                        <input type="text" name="idUser" placeholder="Ej: #-####-#### (Número de cédula)"></input>
+                        <input
+                            type="text"
+                            name="idUser"
+                            placeholder="Ej: #-####-#### (Número de cédula)"
+                        />
                     </div>
-
                     <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
                     </p>
                     <p></p>
@@ -41,6 +46,7 @@ function Home() {
     );
 
 }
+
 const styles = {
     overlay: {
         position: "relative",
@@ -51,7 +57,7 @@ const styles = {
         backgroundColor: "rgba(0, 0, 0, 0)",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
     },
     modal: {
         background: "#fff",
@@ -64,7 +70,8 @@ const styles = {
         flexDirection: "column",      // vertical
         justifyContent: "center",     // centra verticalmente
         alignItems: "center",         // centra horizontalmente
-        textAlign: "center"           // centra el texto
+        textAlign: "center",           // centra el texto
+        zIndex: "10"
     }
 };
 
