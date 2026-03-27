@@ -9,9 +9,9 @@ function Home() {
 
 
     return (
-        <div
+        <section
             className="fondo-container"
-            style={{backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),url(${img})`}}
+            style={{ backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),url(${img})` }}
         >
 
             {/* Modal - */}
@@ -34,6 +34,7 @@ function Home() {
                             type="text"
                             name="idUser"
                             placeholder="Ej: #-####-#### (Número de cédula)"
+                            maxLength={12}
                         />
                     </div>
                     <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
@@ -42,7 +43,7 @@ function Home() {
                 </div>
             </div>
 
-        </div>
+        </section>
     );
 
 }

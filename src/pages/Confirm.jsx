@@ -1,7 +1,7 @@
 
 
-function Admin(){
-    return(
+function Admin() {
+    return (
         <section>
             <p>HGola</p>
         </section>

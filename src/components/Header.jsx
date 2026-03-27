@@ -6,10 +6,11 @@ import Logo from "../assets/img/logo.png";
 function Header() {
     const location = useLocation();
     const navigate = useNavigate();
-    const [text, setText] = useState({ 
-        alt: "PlebisCIT logo", 
-        option1: "Administrador >", 
-        option2: "< Volver" });
+    const [text, setText] = useState({
+        alt: "PlebisCIT logo",
+        option1: "Administrador >",
+        option2: "< Volver"
+    });
 
     const isAdmin = location.pathname === "/admin";
 

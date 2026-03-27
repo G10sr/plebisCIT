@@ -1,7 +1,65 @@
 .fondo-container {
-  background-image: url('./assets/css/CRvotos.png');
   background-size: cover;
   background-position: center;
   height: auto;
-  width: 100%;
+  width: 100dvw;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  /* Envía la imagen al fondo */
+}
+
+.fondo-container h2 {
+  font-size: 30px;
+  font-weight: 400;
+  margin-top: 0px;
+  margin-bottom: 7px;
+}
+
+.fondo-container p {
+  font-size: 15px;
+  white-space: pre-line;
+}
+
+.fondo-container input {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  width: 300px;
+  background-color: rgb(211, 211, 211);
+  padding: 8px;
+  border-color: #3658FA;
+  border-radius: 5px;
+  font-family: 'Outfit', sans-serif;
+  z-index: 10;
+}
+
+
+#idSpace {
+  text-align: left;
+  /* texto alineado a la izquierda */
+}
+
+.fondo-container button {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  width: 300px;
+  color: #A63F3F;
+  background-color: #FF7B7B;
+  padding: 8px;
+  border-width: 0cm;
+  border-radius: 5px;
+  font-family: 'Outfit', sans-serif;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.fondo-container button:hover {
+  background-color: #fa534d;
+}
+
+.fondo-container button:active {
+  background-color: #0f4efc;
+  color: #ffffff;
+
 }
