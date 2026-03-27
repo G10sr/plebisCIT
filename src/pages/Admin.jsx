@@ -70,6 +70,7 @@ const styles = {
         padding: "20px",
         borderRadius: "20px",
         minWidth: "350px",
+        width: "23vw",
         position: "relative",
         border: "2px solid #b4b4b4",
         display: "flex",              // 👈 importante
