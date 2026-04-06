@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import React, { useState } from "react";
 import img from '../assets/img/CRvotos.png';
 import "../assets/css/Home.css"
@@ -39,7 +39,9 @@ function Home() {
                     </div>
                     <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
                     </p>
-                    <button name="startVote">Iniciar Voto</button>
+                    <Link to={"/menuvoting"}>
+                        <button name="startVote">Iniciar Voto</button>
+                    </Link>
                 </div>
             </div>
 

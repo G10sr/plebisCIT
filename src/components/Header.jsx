@@ -12,7 +12,7 @@ function Header() {
         option2: "< Volver"
     });
 
-    const isAdmin = location.pathname === "/admin";
+    const isAdmin = location.pathname === "/admin" || location.pathname === "/menuvoting";
 
     return (
         <header>
