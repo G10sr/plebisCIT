@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import img from '../assets/img/CRvotos.png';
 import "../assets/css/Home.css"
@@ -6,7 +6,11 @@ import "../assets/css/Home.css"
 function Home() {
     const [isOpen, setIsOpen] = useState(true); // 👈 ahora inicia abierto
     const [idUser, setIdUser] = useState("");
+    const navigate = useNavigate();
 
+    const handleStart = () => {
+        navigate("/menuvoting", { replace: true });
+    };
 
     return (
         <section
@@ -39,9 +43,7 @@ function Home() {
                     </div>
                     <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
                     </p>
-                    <Link to={"/menuvoting"}>
-                        <button name="startVote">Iniciar Voto</button>
-                    </Link>
+                    <button name="startVote" onClick={handleStart}>Iniciar Voto</button>
                 </div>
             </div>
 

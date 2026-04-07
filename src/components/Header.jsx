@@ -12,13 +12,15 @@ function Header() {
         option2: "< Volver"
     });
 
-    const isAdmin = location.pathname === "/admin" || location.pathname === "/menuvoting";
+    const isAdmin = location.pathname === "/admin";
+    const isVoting = location.pathname === "/menuvoting";
 
     return (
         <header>
             <img src={Logo} alt="PlebisCIT logo" />
-
-            {isAdmin ? (
+            {isVoting ? (
+                <div></div>
+            ) : isAdmin ? (
                 <button
                     className="btn active"
                     onClick={() => navigate(-1)}
@@ -32,6 +34,7 @@ function Header() {
                     </button>
                 </Link>
             )}
+            
         </header>
     );
 }
