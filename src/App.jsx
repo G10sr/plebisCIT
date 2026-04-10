@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Footer from "./components/Footer"; 
 import MenuVoting from "./pages/MenuVoting";
+import Voting from "./pages/Voting";
 
 function App(){
   return(
@@ -18,6 +19,7 @@ function App(){
             <Route path="/" element={<Home/>}/> 
             <Route path="/admin" element={<Admin/>}/> 
             <Route path="/menuvoting" element={<MenuVoting/>}/> 
+            <Route path="/vote" element={<Voting/>}/>
           </Routes>
         </div>
 
