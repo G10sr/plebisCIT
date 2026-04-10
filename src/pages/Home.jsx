@@ -4,7 +4,6 @@ import img from '../assets/img/CRvotos.png';
 import "../assets/css/Home.css"
 
 function Home() {
-    const [isOpen, setIsOpen] = useState(true); // 👈 ahora inicia abierto
     const [idUser, setIdUser] = useState("");
     const navigate = useNavigate();
 
@@ -13,7 +12,7 @@ function Home() {
     };
 
     return (
-        <section
+        <section //Creacion del fondo
             className="fondo-container"
             style={{ backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),url(${img})` }}
         >
@@ -21,11 +20,11 @@ function Home() {
             {/* Modal - */}
             <div style={styles.overlay}>
                 <div
-                    style={styles.modal}
+                    style={styles.modal} 
                 >
 
                     <h2>
-                        ¡Bienvenido a{" "}
+                        ¡Bienvenido a{" "} 
                         <span style={{ color: "#3658FA" }}>Pl</span>
                         <span style={{ color: "#b9b9b9" }}>eb</span>
                         <span style={{ color: "#ff0000" }}>i</span>
