@@ -1,0 +1,7 @@
+.divObj{
+    width: 100%;
+    min-height: 10vh;
+    border: 1px rgba(0, 0, 0, 0.500) solid;
+    border-radius: 2px;
+    padding: 5px;
+}
