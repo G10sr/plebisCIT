@@ -6,7 +6,8 @@ function VoteObject() {
   const [items] = useState([
     { id: 1, name: "Option A" },
     { id: 2, name: "Option B" },
-    { id: 3, name: "Option C" }
+    { id: 3, name: "Option C" },
+    { id: 4, name: "Option D" }
   ]);
 
   const [object] = useState({
@@ -14,8 +15,7 @@ function VoteObject() {
   });
 
   return (
-    // 2. Added a fragment <> or <div> to wrap the map function
-    <>
+    <div className="voteListContainer">
       {items.map((product) => (
         <div 
           key={product.id} 
@@ -25,7 +25,8 @@ function VoteObject() {
           {product.name}
         </div>
       ))}
-    </>
+
+    </div>
   );
 }
 

@@ -1,7 +1,19 @@
+.voteListContainer{
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+    width: 100%;
+}
+
 .divObj{
     width: 100%;
     min-height: 10vh;
     border: 1px rgba(0, 0, 0, 0.500) solid;
-    border-radius: 2px;
+    border-radius: 5px;
     padding: 5px;
+}
+section{
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
 }
