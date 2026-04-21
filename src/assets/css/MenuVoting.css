@@ -1,7 +1,13 @@
 .VotingList{
-    background-color: aquamarine;
     height: 100vh;
     margin-inline: 20px;
     display: flex;
     flex-direction: column;
+    gap: 1.5vh;
+}
+
+section{
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
 }
