@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PartidoCard from "../components/PartidoCard";
 import PartidoModal from "../components/PartidoModal";
 import placehold from "../assets/img/PlaceHolder.png";
+import img from '../assets/img/CRvotos.png';
 
 function Vote() {
     const [partidoSeleccionado, setPartidoSeleccionado] = useState(null);
@@ -41,7 +42,17 @@ function Vote() {
 
     return (
         //Configuracion de los partidos
-        <section className="fondo-container">
+        <section
+            className="fondo-container"
+            style={{
+                position: "relative",
+                minHeight: "100vh",
+                backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)), url(${img})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat", backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),url(${img})`
+            }}
+        >
             <div style={styles.overlay}>
                 <div style={styles.grid}>
                     {partidos.map((p) => (

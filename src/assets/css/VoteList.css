@@ -1,16 +1,28 @@
 .voteListContainer{
-    display: flex;
-    flex-direction: column;
-    gap: 1.5vh;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     width: 100%;
+    gap: 10px;
 }
 
+@media (max-width: 900px) {
+    .voteListContainer{
+        grid-template-columns: 1fr;
+        gap: none;
+    }
+}
+.column{
+    width: 100%;
+    height: fit-content;
+}
 .divObj{
     width: 100%;
     min-height: 10vh;
     border: 1px rgba(0, 0, 0, 0.500) solid;
     border-radius: 5px;
     padding: 5px;
+    margin-bottom: 10px;
+
 }
 section{
     display: flex;
@@ -18,16 +30,35 @@ section{
     gap: 1.5vh;
 }
 .voteObject{
+    width: 100%;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    
 }
 .voteObject button{
-    height: 20px;
-    width: 20px;
+    height: 30px;
+    width: 30px;
+    border: none;
+    border-radius: 5px;
+
 }
-.voteObject .buttonEdit{
+.voteObject .buttonResult{
     background-color: var(--C-greenHigh);
 }
-.voteObject .buttonEdit:hover{
+.voteObject .buttonResult:hover{
     background-color: var(--C-green);
+}
+.voteObject .buttonEdit{
+    background-color: var(--C-blue);
+}
+.voteObject .buttonEdit:hover{
+    background-color: var(--C-blueLow);
+}
+
+.voteObject .botonDiv{
+    margin-top: auto;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
 }
