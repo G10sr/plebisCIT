@@ -6,33 +6,77 @@ function VoteObject() {
     { id: 1, name: "Option A" },
     { id: 2, name: "Option B" },
     { id: 3, name: "Option C" },
-    { id: 4, name: "Option D" }
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 1, name: "Option A" },
+    { id: 2, name: "Option B" },
+    { id: 3, name: "Option C" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 1, name: "Option A" },
+    { id: 2, name: "Option B" },
+    { id: 3, name: "Option C" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 1, name: "Option A" },
+    { id: 2, name: "Option B" },
+    { id: 3, name: "Option C" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 1, name: "Option A" },
+    { id: 2, name: "Option B" },
+    { id: 3, name: "Option C" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 1, name: "Option A" },
+    { id: 2, name: "Option B" },
+    { id: 3, name: "Option C" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
+    { id: 4, name: "Option D" },
   ]);
 
-  const [object] = useState({
-    id: 1
-  });
+  const half = Math.ceil(items.length / 2);
+  const leftColumn = items.slice(0, half);
+  const rightColumn = items.slice(half);
 
   return (
     <div className="voteListContainer">
-      {items.map((product) => (
-        <div className="voteObject">
-
-          <div
-            key={product.id} 
-            id={object.id} 
-            className="divObj"
-          >
-            {product.name}
-            <button className="buttonEdit"
-              id={product.id}
-            />
+      
+      {/* Columna izquierda */}
+      <div className="column">
+        {leftColumn.map((product) => (
+          <div key={product.id} className="voteObject">
+            <div className="divObj">
+              {product.name}
+              <div className="botonDiv">
+                <button className="buttonEdit" />
+                <button className="buttonResult" />
+              </div>
+            </div>
           </div>
+        ))}
+      </div>
 
-          
-
-        </div>
-      ))}
+      {/* Columna derecha */}
+      <div className="column">
+        {rightColumn.map((product) => (
+          <div key={product.id} className="voteObject">
+            <div className="divObj">
+              {product.name}
+              <div className="botonDiv">
+                <button className="buttonEdit" />
+                <button className="buttonResult" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
     </div>
   );
