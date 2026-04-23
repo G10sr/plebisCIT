@@ -6,6 +6,7 @@ import Admin from "./pages/Admin";
 import Footer from "./components/Footer"; 
 import MenuVoting from "./pages/MenuVoting";
 import Voting from "./pages/Voting";
+import AdminSettings from "./pages/AdminSettings";
 
 function App(){
   return(
@@ -20,6 +21,7 @@ function App(){
             <Route path="/admin" element={<Admin/>}/> 
             <Route path="/menuvoting" element={<MenuVoting/>}/> 
             <Route path="/vote" element={<Voting/>}/>
+            <Route path="/adminsettings" element={<AdminSettings/>}/>
           </Routes>
         </div>
 
