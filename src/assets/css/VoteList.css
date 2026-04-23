@@ -3,6 +3,7 @@
     grid-template-columns: repeat(2, 1fr);
     width: 100%;
     gap: 10px;
+    padding-inline: 10vw;
 }
 
 @media (max-width: 900px) {
@@ -41,8 +42,15 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    color: white;
+    transition: 200ms;
 }
-
+.voteObject button:hover {
+    color: rgb(0, 0, 0);
+}
+.voteObject button:active {
+    color: rgb(255, 255, 255);
+}
 .voteObject .buttonResult {
     background-color: var(--C-greenHigh, #2ecc71);
 }

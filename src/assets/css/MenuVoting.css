@@ -5,7 +5,13 @@
     flex-direction: column;
     gap: 1.5vh;
 }
-
+hr {
+    border: none;
+    height: 1px;
+    background-color: black;   
+    width: 90%;
+    opacity: 1;
+}
 section{
     display: flex;
     flex-direction: column;
