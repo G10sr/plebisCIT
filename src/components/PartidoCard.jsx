@@ -2,6 +2,7 @@ import React from "react";
 
 function PartidoCard({ partido, onClick, seleccionado }) {
   const esNulo = partido.id === 0;
+  
 
   return (
     <div
