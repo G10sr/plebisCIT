@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import "../assets/css/Admin.css";
 import img from '../assets/img/CRvotos.png';
@@ -7,7 +7,11 @@ import img from '../assets/img/CRvotos.png';
 function Admin() {
     const [isOpen, setIsOpen] = useState(true); // 👈 ahora inicia abierto
     const [idUser, setIdUser] = useState("");
-
+    const navigate = useNavigate();
+    
+    const handleStart = () => {
+        navigate("/menuvotingAdmin", { replace: true });
+    };
 
     return (    
         <section
@@ -44,7 +48,7 @@ function Admin() {
                         />
                     </div>
                     <p>Si no tienes cuenta, contacta soporte.</p>
-                    <button name="enterAdmin">Entrar Modo Administrador</button>
+                    <button name="enterAdmin"  onClick={handleStart}>Entrar Modo Administrador</button>
                 </div>
             </div>
 

@@ -1,8 +1,9 @@
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGear, faChartSimple, faSquarePollHorizontal } from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
 import "../assets/css/VoteList.css";
 
-function VoteObject() {
+function VoteObjectAdmin() {
   const [items] = useState([
     { id: 1, name: "Option A" },
     { id: 2, name: "Option B" },
@@ -23,6 +24,14 @@ function VoteObject() {
           <div key={product.id} className="voteObject">
             <div className="divObj">
               {product.name}
+              <div className="botonDiv">
+                <button className="buttonEdit">
+                  <FontAwesomeIcon icon={faGear} />
+                </button>
+                <button className="buttonResult">
+                  <FontAwesomeIcon icon={faSquarePollHorizontal} />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -34,6 +43,14 @@ function VoteObject() {
           <div key={product.id} className="voteObject">
             <div className="divObj">
               {product.name}
+              <div className="botonDiv">
+                <button className="buttonEdit">
+                  <FontAwesomeIcon icon={faGear} />
+                </button>
+                <button className="buttonResult">
+                  <FontAwesomeIcon icon={faSquarePollHorizontal} />
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -43,4 +60,4 @@ function VoteObject() {
   );
 }
 
-export default VoteObject;
+export default VoteObjectAdmin;

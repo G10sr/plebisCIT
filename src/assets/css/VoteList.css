@@ -1,64 +1,69 @@
-.voteListContainer{
+.voteListContainer {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     width: 100%;
     gap: 10px;
+    padding-inline: 10vw;
 }
 
 @media (max-width: 900px) {
-    .voteListContainer{
+    .voteListContainer {
         grid-template-columns: 1fr;
-        gap: none;
     }
 }
-.column{
+
+.column {
     width: 100%;
     height: fit-content;
 }
-.divObj{
+
+/* Este es el contenedor de cada tarjeta */
+.divObj {
     width: 100%;
     min-height: 10vh;
     border: 1px rgba(0, 0, 0, 0.500) solid;
     border-radius: 5px;
-    padding: 5px;
+    padding: 10px;
     margin-bottom: 10px;
-
-}
-section{
-    display: flex;
-    flex-direction: column;
-    gap: 1.5vh;
-}
-.voteObject{
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
     
+    /* Flexbox vertical para separar texto de botones */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
 }
-.voteObject button{
+
+.voteObject {
+    width: 100%;
+}
+
+.voteObject button {
     height: 30px;
     width: 30px;
     border: none;
     border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    transition: 200ms;
+}
+.voteObject button:hover {
+    color: rgb(0, 0, 0);
+}
+.voteObject button:active {
+    color: rgb(255, 255, 255);
+}
+.voteObject .buttonResult {
+    background-color: var(--C-greenHigh, #2ecc71);
+}
 
-}
-.voteObject .buttonResult{
-    background-color: var(--C-greenHigh);
-}
-.voteObject .buttonResult:hover{
-    background-color: var(--C-green);
-}
-.voteObject .buttonEdit{
-    background-color: var(--C-blue);
-}
-.voteObject .buttonEdit:hover{
-    background-color: var(--C-blueLow);
+.voteObject .buttonEdit {
+    background-color: var(--C-blue, #3498db);
 }
 
-.voteObject .botonDiv{
-    margin-top: auto;
+/* Contenedor de botones alineado a la derecha */
+.voteObject .botonDiv {
     display: flex;
     flex-direction: row;
-    gap: 5px;
+    justify-content: flex-end; /* Alinea los botones a la derecha */
+    gap: 8px; /* Espacio pequeño entre botones */
+    margin-top: 10px; /* Asegura separación si el texto es largo */
 }
