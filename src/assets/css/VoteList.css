@@ -67,3 +67,29 @@
     gap: 8px; /* Espacio pequeño entre botones */
     margin-top: 10px; /* Asegura separación si el texto es largo */
 }
+
+.enterVoteBtn{
+    position: fixed;
+    bottom: 12%;
+    width: 120px; /* mejor fijo que vw */
+    height: 50px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--C-blue);
+    right:14%;
+}
+
+
+.enterVoteBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.enterVoteBtn:not(:disabled):hover {
+    background-color: var(--C-blueLow);
+}
+
+.enterVoteBtn:not(:disabled):active {
+    background-color: var(--C-blueShaded);
+    color: white;
+}

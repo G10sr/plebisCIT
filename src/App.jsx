@@ -28,7 +28,11 @@ function App(){
 
         <div style={{ flex: 1 }}>
           <Routes>
-            <Route path="/" element={<Home/>}/> 
+            <Route path="/" element={
+              <CleanHistoryWrapper>
+                <Home />
+              </CleanHistoryWrapper>
+              }/> 
             <Route path="/admin" element={<Admin/>}/> 
             
             {/* Aplicamos la Opción 2 aquí */}
@@ -40,9 +44,15 @@ function App(){
                 </CleanHistoryWrapper>
               }
             /> 
-
+            <Route 
+              path="/vote" 
+              element={
+                <CleanHistoryWrapper>
+                  <Voting/>
+                </CleanHistoryWrapper>
+              }
+            /> 
             <Route path="/menuvotingAdmin" element={<MenuVotingAdmin/>}/> 
-            <Route path="/vote" element={<Voting/>}/>
             <Route path="/adminsettings" element={<AdminSettings/>}/>
             
             {/* Redirección opcional para limpiar el rastro de /home si alguien lo escribe */}

@@ -1,5 +1,5 @@
 .VotingList{
-    min-height: 100vh;
+    min-height: 80vh;
     margin-inline: 20px;
     display: flex;
     flex-direction: column;
