@@ -33,7 +33,7 @@ function Header() {
             // 3. Si estamos en una subpágina de admin, volvemos a la raíz de admin
             navigate("/admin", { replace: true });
         } else {
-            navigate(-1);
+            navigate(-1, {replace: true});
         }
     };
 
