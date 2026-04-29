@@ -1,4 +1,4 @@
-import { useState } from "react";
+ import { useState } from "react";
 
 // ─── Estilos globales inyectados como <style> ────────────────────────────────
 const GLOBAL_CSS = `
@@ -239,6 +239,10 @@ function Toggle({ checked, onChange }) {
 /** Tarjeta de una opción de candidato */
 function OptionCard({ index, option, onChange, onRemove }) {
   const update = (key) => (e) => onChange(index, { ...option, [key]: e.target.value });
+  const handleFiles = (e) => {
+  const files = Array.from(e.target.files).slice(0, 5);
+  onChange(index, { ...option, imagenes: files });
+``};
 
   return (
     <div
@@ -289,9 +293,30 @@ function OptionCard({ index, option, onChange, onRemove }) {
           <TextArea placeholder="Value" value={option.descripcion} onChange={update("descripcion")} />
         </Field>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, paddingTop: 22 }}>
-          <button style={btnSecondaryStyle}>Sube Imágenes</button>
+          <label style={btnSecondaryStyle}>
+            Sube Imágenes
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFiles}
+              style={{ display: "none" }}
+            />
+          </label>
           <p style={{ fontSize: 12, color: "var(--muted)", textAlign: "right", lineHeight: 1.5, maxWidth: 180 }}>
             Estas imágenes se mostrarán al momento de votar en un carrusel. Se pueden subir hasta 5 imágenes.
+            {option.imagenes?.length > 0 && (
+              <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {option.imagenes.map((file, i) => (
+                  <img
+                    key={i}
+                    src={URL.createObjectURL(file)}
+                    alt="preview"
+                    style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }}
+                  />
+                ))}
+              </div>
+            )}
           </p>
         </div>
       </div>
@@ -325,6 +350,7 @@ const GRUPOS = [
 
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function NuevaVotacion() {
+  const [csvFile, setCsvFile] = useState(null);
   const [nombre, setNombre] = useState("");
   const [inicio, setInicio] = useState("");
   const [final, setFinal] = useState("");
@@ -332,7 +358,7 @@ export default function NuevaVotacion() {
   const [oculto, setOculto] = useState(true);
   const [vigente, setVigente] = useState(true);
   const [options, setOptions] = useState([
-    { nombre: "", descripcion: "" },
+    { nombre: "", descripcion: "", imagenes: [] },
   ]);
 
   const toggleGrupo = (label) => setGrupos((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -341,14 +367,40 @@ export default function NuevaVotacion() {
     setOptions((prev) => prev.map((o, i) => (i === index ? updated : o)));
 
   const addOption = () =>
-    setOptions((prev) => [...prev, { nombre: "", descripcion: "", }]);
+    setOptions((prev) => [...prev, { nombre: "", descripcion: "", imagenes: [] }]);
 
   const removeOption = (index) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
 
   const handleSubmit = () => {
-    console.log({ nombre, inicio, final, grupos, oculto, vigente, options });
-    alert("Votación creada (ver consola para datos)");
+    const formData = new FormData();
+
+    formData.append("nombre", nombre);
+    formData.append("inicio", inicio);
+    formData.append("final", final);
+    formData.append("oculto", oculto);
+    formData.append("vigente", vigente);
+    formData.append("grupos", JSON.stringify(grupos));
+
+    if (csvFile) {
+      formData.append("csv", csvFile);
+    }
+
+    options.forEach((opt, i) => {
+      formData.append(`options[${i}][nombre]`, opt.nombre);
+      formData.append(`options[${i}][descripcion]`, opt.descripcion);
+
+      opt.imagenes?.forEach((img) => {
+        formData.append(`options[${i}][imagenes]`, img);
+      });
+    });
+
+    console.log("FORMDATA:");
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
+    alert("Listo (ver consola)");
   };
 
   return (
@@ -401,7 +453,20 @@ export default function NuevaVotacion() {
           {/* CSV */}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
             <div style={{ textAlign: "right" }}>
-              <button style={btnSecondaryStyle}>Insertar Datos por CSV</button>
+              <label style={btnSecondaryStyle}>
+                Insertar Datos por CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => setCsvFile(e.target.files[0])}
+                  style={{ display: "none" }}
+                />
+              </label>
+              {csvFile && (
+                <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>
+                  {csvFile.name}
+                </p>
+              )}
               <p style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
                 Importar los datos de las personas<br />
                 legibles para esta votación.<br />
