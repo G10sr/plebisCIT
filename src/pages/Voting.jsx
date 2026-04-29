@@ -135,7 +135,7 @@ function Vote() {
                             disabled={!confirmado}
                             onClick={() => {
                                 alert(`¡Voto enviado! ID = ${partidoSeleccionado}`);
-                                navigate("/voteConfirm");
+                                navigate("/voteConfirm", {replace:true});
                             }}
                         >
                             Enviar Voto

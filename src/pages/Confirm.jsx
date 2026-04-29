@@ -10,7 +10,7 @@ function Confirm() {
     useEffect(() => {
         // Si llega a 0, redirige
         if (count === 0) {
-            navigate("/");
+            navigate("/", {replace: true});
             return;
         }
 
