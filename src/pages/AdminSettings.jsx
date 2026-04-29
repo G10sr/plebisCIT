@@ -320,6 +320,20 @@ function OptionCard({ index, option, onChange, onRemove }) {
           </p>
         </div>
       </div>
+      <Field label="Color de la opción">
+        <input
+          type="color"
+          value={option.color}
+          onChange={(e) => onChange(index, { ...option, color: e.target.value })}
+          style={{
+            width: 60,
+            height: 40,
+            border: "none",
+            background: "none",
+            cursor: "pointer",
+          }}
+        />
+      </Field>
     </div>
   );
 }
@@ -358,8 +372,15 @@ export default function NuevaVotacion() {
   const [oculto, setOculto] = useState(true);
   const [vigente, setVigente] = useState(true);
   const [options, setOptions] = useState([
-    { nombre: "", descripcion: "", imagenes: [] },
+    { nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" },
   ]);
+
+  const updateOptionColor = (index, color) =>
+  setOptions((prev) =>
+    prev.map((o, i) =>
+      i === index ? { ...o, color } : o
+    )
+  );
 
   const toggleGrupo = (label) => setGrupos((prev) => ({ ...prev, [label]: !prev[label] }));
 
@@ -367,7 +388,10 @@ export default function NuevaVotacion() {
     setOptions((prev) => prev.map((o, i) => (i === index ? updated : o)));
 
   const addOption = () =>
-    setOptions((prev) => [...prev, { nombre: "", descripcion: "", imagenes: [] }]);
+    setOptions((prev) => [
+      ...prev,
+      { nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" },
+    ]);
 
   const removeOption = (index) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
@@ -449,7 +473,7 @@ export default function NuevaVotacion() {
               </>
             ))}
           </div>
-
+          
           {/* CSV */}
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
             <div style={{ textAlign: "right" }}>
