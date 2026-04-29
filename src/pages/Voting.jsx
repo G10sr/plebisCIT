@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import PartidoCard from "../components/PartidoCard";
 import PartidoModal from "../components/PartidoModal";
 import placehold from "../assets/img/PlaceHolder.png";
@@ -9,6 +10,7 @@ function Vote() {
     const [partidoActivo, setPartidoActivo] = useState(null);
     const [confirmado, setConfirmado] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const navigate = useNavigate();
 
     // 👇 detectar resize
     useEffect(() => {
@@ -133,6 +135,7 @@ function Vote() {
                             disabled={!confirmado}
                             onClick={() => {
                                 alert(`¡Voto enviado! ID = ${partidoSeleccionado}`);
+                                navigate("/voteConfirm");
                             }}
                         >
                             Enviar Voto
