@@ -1,65 +1,74 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import "../assets/css/VoteList.css";
 import "../assets/css/VoteListSelected.css";
 
-
 function VoteObject() {
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedVoting, setSelectedVoting] = useState(null);
+  const [votings, setVotings] = useState([]);
   const navigate = useNavigate();
-  const [items] = useState([
-    { id: 1, name: "Option A" },
-    { id: 2, name: "Option B" },
-    { id: 3, name: "Option C" },
-    { id: 4, name: "Option D" },
-    
-  ]);
-  const handleSelect = (id) => {
-    setSelectedId(id);
+  const location = useLocation();
+
+  const cedula = location.state?.cedula;
+
+  useEffect(() => {
+    const fetchVotings = async () => {
+      if (!cedula) return;
+      try {
+        const res = await fetch(`/api/votings/${cedula}`);
+        const data = await res.json();
+        console.log("Datos recibidos del backend:", data); // Revisa esto en la consola del navegador
+        setVotings(data);
+      } catch (err) {
+        console.error("Error cargando votaciones:", err);
+        setVotings([]);
+      }
+    };
+    fetchVotings();
+  }, [cedula]);
+
+  const handleSelect = (voting) => {
+    if (voting.hasVoted) return; 
+    setSelectedVoting(voting);
   };
 
-  const half = Math.ceil(items.length / 2);
-  const leftColumn = items.slice(0, half);
-  const rightColumn = items.slice(half);
+  const handleContinue = () => {
+    if (!selectedVoting) return;
+    navigate("/vote", {
+      state: { voting: selectedVoting }
+    }, { replace: true });
+  };
+
+  if (!votings.length) {
+    return <p className="noVotings">No tienes votaciones disponibles.</p>;
+  }
 
   return (
     <div className="voteListContainer">
-      
-      {/* Columna izquierda */}
-      <div className="column">
-        {leftColumn.map((product, index) => (
-            <div
-              key={`${product.id}-${index}`} // temporal si no corriges IDs
-              className={`voteObject ${selectedId === product.id ? "selected" : ""}`}
-              onClick={() => handleSelect(product.id)}
-            >
-              <div className="divObj">
-                {product.name}
-              </div>
-            </div>
-          ))}
-      </div>
-
-      {/* Columna derecha */}
-      <div className="column">
-        {rightColumn.map((product, index) => (
+      {votings.map((voting) => {
+        // Forzamos que ambos sean string para evitar que "1" !== 1
+        const isSelected = selectedVoting?.Config_ID?.toString() === voting.Config_ID?.toString();
+        
+        return (
           <div
-            key={`${product.id}-${index}`} // temporal si no corriges IDs
-            className={`voteObject ${selectedId === product.id ? "selected" : ""}`}
-            onClick={() => handleSelect(product.id)}
+            key={voting.Config_ID}
+            className={`voteObject ${isSelected ? "selected" : ""} ${voting.hasVoted ? "disabled" : ""}`}
+            onClick={() => handleSelect(voting)}
           >
             <div className="divObj">
-              {product.name}
+              {voting.Name}
+              {voting.hasVoted && <span className="votedBadge"> (Ya votaste)</span>}
             </div>
           </div>
-        ))}
-      </div>
-      <button 
+        );
+      })}
+
+      <button
         className="enterVoteBtn"
-        disabled={!selectedId}
-        onClick={() => navigate("/vote", { replace: true })}
-        >
-        VOTE NOW
+        disabled={!selectedVoting}
+        onClick={handleContinue}
+      >
+        VOTAR AHORA
       </button>
     </div>
   );

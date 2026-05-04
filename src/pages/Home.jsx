@@ -8,7 +8,11 @@ function Home() {
     const navigate = useNavigate();
 
     const handleStart = () => {
-        navigate("/menuvoting", { replace: true });
+        if (!idUser) {
+            alert("Por favor ingresa tu cédula");
+            return;
+        }
+        navigate("/menuvoting", { replace: true, state: { cedula: idUser } });
     };
 
     return (
@@ -38,6 +42,8 @@ function Home() {
                             name="idUser"
                             placeholder="Ej: #-####-#### (Número de cédula)"
                             maxLength={12}
+                            value={idUser}
+                            onChange={(e) => setIdUser(e.target.value)}
                         />
                     </div>
                     <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!

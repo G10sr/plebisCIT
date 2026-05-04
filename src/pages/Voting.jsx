@@ -26,7 +26,7 @@ function Vote() {
             id: 1,
             nombre: "Partido 1",
             descripcionCorta: "Descripción corta del partido y motivos.",
-            descripcionLarga: "Descripción larga del partidoaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            descripcionLarga: "Descripción del partido",
             imagenes: [placehold, placehold],
             color: "#9ecbff",
         },

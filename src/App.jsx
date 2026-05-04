@@ -1,6 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/Header";
-import React, { useEffect } from "react";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Footer from "./components/Footer";
@@ -8,17 +7,8 @@ import MenuVoting from "./pages/MenuVoting";
 import MenuVotingAdmin from "./pages/MenuVotingAdmin";
 import Voting from "./pages/Voting";
 import VoteComplete from "./pages/Confirm";
+import ResultsVotings from "./pages/Results";
 import AdminSettings from "./pages/AdminSettings";
-
-const CleanHistoryWrapper = ({ children }) => {
-  const location = useLocation();
-
-  useEffect(() => {
-    window.history.replaceState(null, "", window.location.pathname);
-  }, [location]);
-
-  return children;
-};
 
 function App() {
   return (
@@ -29,52 +19,25 @@ function App() {
 
         <div style={{ flex: 1 }}>
           <Routes>
-            <Route path="/" element={
-              <CleanHistoryWrapper>
-                <Home />
-              </CleanHistoryWrapper>
-            } />
+
+            <Route path="/" element={<Home />} />
             <Route path="/admin" element={<Admin />} />
 
-            {/* Aplicamos la Opción 2 aquí */}
-            <Route
-              path="/menuvoting"
-              element={
-                <CleanHistoryWrapper>
-                  <MenuVoting />
-                </CleanHistoryWrapper>
-              }
-            />
-            <Route
-              path="/vote"
-              element={
-                <CleanHistoryWrapper>
-                  <Voting />
-                </CleanHistoryWrapper>
-              }
-            />
-            <Route
-              path="/voteConfirm"
-              element={
-                <CleanHistoryWrapper>
-                  <VoteComplete />
-                </CleanHistoryWrapper>
-              }
-            />
+            <Route path="/menuvoting" element={<MenuVoting />} />
+            <Route path="/vote" element={<Voting />} />
+            <Route path="/voteConfirm" element={<VoteComplete />} />
+
             <Route path="/menuvotingAdmin" element={<MenuVotingAdmin />} />
-            <Route path="/adminsettings" element={<AdminSettings />} />
+            <Route path="/adminsettings/:id" element={<AdminSettings />} />
+            <Route path="/resultsvoting/:id" element={<ResultsVotings />} />
 
-            {/* Redirección opcional para limpiar el rastro de /home si alguien lo escribe */}
+            {/* Redirecciones */}
             <Route path="/home" element={<Navigate to="/" replace />} />
+            <Route path="/finishvoting" element={<Navigate to="/" replace />} />
 
-            <Route
-              path="/finishvoting"
-              element={
-                <CleanHistoryWrapper>
-                  <Home />
-                </CleanHistoryWrapper>
-              }
-            />
+            {/* fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+
           </Routes>
         </div>
 
