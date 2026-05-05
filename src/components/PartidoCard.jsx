@@ -11,7 +11,7 @@ function PartidoCard({ partido, onClick, seleccionado }) {
         ...styles.card,
 
         border: seleccionado
-          ? "3px solid #2f80ed"
+          ? `3px solid ${partido.color || "#2f80ed"}`
           : esNulo
           ? "3px dashed #4d4d4d"
           : "2px solid rgb(180, 180, 180)",

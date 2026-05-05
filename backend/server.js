@@ -9,88 +9,119 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* =============================================
-   ENDPOINT: OBTENER VOTACIONES POR CÉDULA
-   ============================================= */
 app.get("/api/votings/:cedula", async (req, res) => {
   const { cedula } = req.params;
 
   try {
-    // 1. Obtener todas las votaciones activas y no ocultas
-    // Usamos comillas dobles en el SELECT si los nombres en la DB tienen mayúsculas
+    // 1. Traer configs visibles
     const votingsConfig = await sql`
       SELECT * FROM "Votings_Config"
-      WHERE "Oculto" = false AND "Vigente" = true
+      WHERE "Oculto" = false
     `;
 
     const votings = [];
 
-    // Usamos un bucle for...of para manejar las consultas asíncronas secuencialmente
     for (const voting of votingsConfig) {
-      // Postgres a veces devuelve las llaves en minúsculas si no se definieron con ""
-      // Normalizamos el ID para el frontend
-      const currentConfigId = voting.Config_ID || voting.config_id;
-      const currentName = voting.Name || voting.name;
+      const configId = voting.Config_ID || voting.config_id;
+      const name = voting.Name || voting.name;
+      const admin =
+        voting.usrAdmin ||
+        voting.usradmin ||
+        voting.Admin ||
+        voting.admin ||
+        null;
 
-      const dataTableName = `Vote_${currentName}_Data`;
-      const optionsTableName = `Vote_${currentName}_Options`;
+      const dataTable = `Vote_${name}_Data`;
+      const optionsTable = `Vote_${name}_Options`;
 
-      // 2. Verificar si el usuario ya votó
-      let hasVoted = false;
+      let userData;
+
+      // 🔥 VALIDAR SI USUARIO EXISTE EN ESA VOTACIÓN
       try {
-        const userData = await sql`
-          SELECT hasvoted FROM ${sql(dataTableName)}
+        userData = await sql`
+          SELECT hasvoted FROM ${sql(dataTable)}
           WHERE "ced" = ${cedula}
         `;
-        if (userData.length > 0) {
-          // Algunos drivers devuelven booleanos o 1/0, nos aseguramos de que sea booleano
-          hasVoted = !!userData[0].hasvoted;
+
+        if (userData.length === 0) {
+          continue; // 🚨 CLAVE: ignora votación
         }
       } catch (err) {
-        console.error(`Error consultando tabla de datos ${dataTableName}:`, err.message);
+        console.warn(`Tabla no válida: ${dataTable}`);
+        continue;
       }
 
-      // 3. Obtener opciones de la votación
-      let options = ["Opción A", "Opción B", "Opción C", "Opción D"];
+      const hasVoted = !!userData[0].hasvoted;
+
+      // Opciones
+      let options = [];
       try {
         const optionsData = await sql`
-          SELECT "Name" FROM ${sql(optionsTableName)}
+          SELECT "Name" FROM ${sql(optionsTable)}
           ORDER BY "ID" ASC
         `;
-        if (optionsData.length > 0) {
-          options = optionsData.map(o => o.Name || o.name);
-        }
-      } catch (err) {
-        console.warn(`Usando opciones por defecto para: ${currentName}`);
+        options = optionsData.map(o => o.Name || o.name);
+      } catch {
+        options = ["Opción A", "Opción B"];
       }
 
-      // 4. Construir el objeto final con el nombre exacto de las llaves para el Frontend
       votings.push({
-        Config_ID: currentConfigId, // Crucial para evitar el error de "todos seleccionados"
-        Name: currentName,
-        options: options,
-        hasVoted: hasVoted,
-        Oculto: voting.Oculto || voting.oculto,
-        Vigente: voting.Vigente || voting.vigente
+        Config_ID: configId,
+        Name: name,
+        usrAdmin: admin,
+        options,
+        hasVoted,
+        Start_time: voting.Start_time ?? voting.start_time ?? null,
+        End_time: voting.End_time ?? voting.end_time ?? null,
+        Vigente: voting.Vigente ?? voting.vigente,
       });
     }
 
-    // Enviamos la respuesta al cliente
     res.json(votings);
 
   } catch (err) {
-    console.error("Error crítico en el backend:", err);
-    res.status(500).json({ 
-      error: "Error interno del servidor al procesar votaciones",
-      message: err.message 
-    });
+    console.error(err);
+    res.status(500).json({ error: "Error interno" });
   }
 });
 
 /* =============================================
-   INICIO DEL SERVIDOR
+   ENDPOINT: OBTENER OPCIONES DE UNA VOTACIÓN
    ============================================= */
+app.get("/api/voting-options/:votingName", async (req, res) => {
+  const { votingName } = req.params;
+
+  try {
+    const optionsTable = `Vote_${votingName}_Options`;
+
+    const optionsData = await sql`
+      SELECT * FROM ${sql(optionsTable)}
+      ORDER BY "ID" ASC
+    `;
+
+    const options = optionsData.map((opt) => ({
+      id: opt.ID || opt.id,
+      Name: opt.Name || opt.name,
+      Des: opt.Des || opt.des || "",
+      Img1: opt.Img1 || opt.img1 || null,
+      Img2: opt.Img2 || opt.img2 || null,
+      Img3: opt.Img3 || opt.img3 || null,
+      Img4: opt.Img4 || opt.img4 || null,
+      Img5: opt.Img5 || opt.img5 || null,
+      Color: opt.Color || opt.color || "#9ecbff",
+    }));
+
+    res.json(options);
+  } catch (err) {
+    console.error(`Error obteniendo opciones de ${votingName}:`, err.message);
+    res.status(500).json({
+      error: `No se pudieron cargar las opciones para ${votingName}`,
+      message: err.message,
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor funcionando en http://localhost:${PORT}`);
+  console.log(`🚀 http://localhost:${PORT}`);
 });

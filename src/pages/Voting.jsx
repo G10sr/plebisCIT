@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PartidoCard from "../components/PartidoCard";
 import PartidoModal from "../components/PartidoModal";
-import placehold from "../assets/img/PlaceHolder.png";
 import img from '../assets/img/CRvotos.png';
 
 function Vote() {
@@ -10,9 +9,15 @@ function Vote() {
     const [partidoActivo, setPartidoActivo] = useState(null);
     const [confirmado, setConfirmado] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [partidos, setPartidos] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
+    
     const navigate = useNavigate();
+    const location = useLocation();
+    const voting = location.state?.voting;
 
-    // 👇 detectar resize
+    // 👇 Detectar resize
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
@@ -21,35 +26,55 @@ function Vote() {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    const partidos = [
-        {
-            id: 1,
-            nombre: "Partido 1",
-            descripcionCorta: "Descripción corta del partido y motivos.",
-            descripcionLarga: "Descripción del partido",
-            imagenes: [placehold, placehold],
-            color: "#9ecbff",
-        },
-        {
-            id: 2,
-            nombre: "Partido 2",
-            descripcionCorta: "Descripción corta del partido y motivos.",
-            descripcionLarga: "Descripción larga del partido...",
-            imagenes: [placehold],
-            color: "#9cffc0",
-        },
-        {
-            id: 3,
-            nombre: "Partido 3",
-            descripcionCorta: "Descripción corta del partido y motivos.",
-            descripcionLarga: "Descripción larga del partido...",
-            imagenes: [placehold],
-            color: "#9cffc0",
-        },
-        {
-            id: 0,
-        },
-    ];
+    // 👇 Cargar opciones de votación desde la BD
+    useEffect(() => {
+        if (!voting?.Name) {
+            setLoadError("No se especificó la votación");
+            setIsLoading(false);
+            return;
+        }
+
+        const fetchOptions = async () => {
+            try {
+                setIsLoading(true);
+                const res = await fetch(`/api/voting-options/${voting.Name}`);
+                if (!res.ok) throw new Error("Error cargando opciones");
+
+                const data = await res.json();
+                
+                // Transformar datos de BD a formato esperado por PartidoCard
+                const transformedPartidos = data.map((opt, idx) => ({
+                    id: opt.id || idx,
+                    nombre: opt.Name,
+                    descripcionCorta: opt.Des || opt.Name,
+                    descripcionLarga: opt.Des || opt.Name,
+                    imagenes: [opt.Img1, opt.Img2, opt.Img3, opt.Img4, opt.Img5].filter(Boolean),
+                    color: opt.Color || "#9ecbff",
+                }));
+
+                // Agregar opción de "No votar" al final
+                transformedPartidos.push({ id: 0 });
+
+                setPartidos(transformedPartidos);
+            } catch (err) {
+                console.error("Error cargando opciones:", err);
+                setLoadError("No se pudieron cargar las opciones de votación");
+                setPartidos([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchOptions();
+    }, [voting?.Name]);
+
+    if (isLoading) {
+        return <p style={{ textAlign: "center", paddingTop: "100px" }}>Cargando opciones...</p>;
+    }
+
+    if (loadError) {
+        return <p style={{ textAlign: "center", paddingTop: "100px", color: "red" }}>{loadError}</p>;
+    }
 
     return (
         <section

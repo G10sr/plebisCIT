@@ -36,6 +36,16 @@
     width: 100%;
 }
 
+.voteObject.disabled {
+    opacity: 0.55;
+    filter: grayscale(0.4);
+    cursor: not-allowed;
+}
+
+.voteObject.disabled .divObj {
+    pointer-events: none;
+}
+
 .voteObject button {
     height: 30px;
     width: 30px;

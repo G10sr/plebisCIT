@@ -1,63 +1,135 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import "../assets/css/VoteList.css";
 import "../assets/css/VoteListSelected.css";
 
 function VoteObject() {
   const [selectedVoting, setSelectedVoting] = useState(null);
   const [votings, setVotings] = useState([]);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
-  const cedula = location.state?.cedula;
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const cedula = state?.cedula;
 
   useEffect(() => {
+    if (!cedula || cedula === "undefined") {
+      setVotings([]);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchVotings = async () => {
-      if (!cedula) return;
       try {
+        setIsLoading(true);
+        setLoadError(null);
+
         const res = await fetch(`/api/votings/${cedula}`);
+
+        if (!res.ok) {
+          setVotings([]);
+          return;
+        }
+
         const data = await res.json();
-        console.log("Datos recibidos del backend:", data); // Revisa esto en la consola del navegador
         setVotings(data);
+
       } catch (err) {
-        console.error("Error cargando votaciones:", err);
+        console.error(err);
+        setLoadError("No se pudieron cargar las votaciones.");
         setVotings([]);
+      } finally {
+        setIsLoading(false);
       }
     };
+
     fetchVotings();
   }, [cedula]);
 
-  const handleSelect = (voting) => {
-    if (voting.hasVoted) return; 
-    setSelectedVoting(voting);
-  };
+  // 🔥 misma lógica pero más compacta
+  const processedVotings = useMemo(() => {
+    const now = new Date();
+
+    return votings.map((v) => {
+      const start = v.Start_time ? new Date(v.Start_time) : null;
+      const end = v.End_time ? new Date(v.End_time) : null;
+
+      const isVigente = [true, "true", 1, "1"].includes(v.Vigente);
+
+      const isDisabled =
+        v.hasVoted ||
+        (start && now < start) ||
+        (end && now > end) ||
+        !isVigente;
+
+      let statusLabel = null;
+      if (v.hasVoted) statusLabel = "Ya votaste";
+      else if (start && now < start) statusLabel = `Comienza ${start.toLocaleString()}`;
+      else if (!isVigente) statusLabel = "No vigente";
+      else if (end && now > end) statusLabel = "Votación finalizada";
+
+      return {
+        ...v,
+        isDisabled,
+        statusLabel,
+        admin:
+          v.usrAdmin ||
+          v.Admin ||
+          v.admin ||
+          v.Encargado ||
+          v.encargado ||
+          "No disponible",
+      };
+    });
+  }, [votings]);
 
   const handleContinue = () => {
     if (!selectedVoting) return;
-    navigate("/vote", {
-      state: { voting: selectedVoting }
-    }, { replace: true });
+    navigate("/vote", { state: { voting: selectedVoting }, replace: true });
   };
 
-  if (!votings.length) {
-    return <p className="noVotings">No tienes votaciones disponibles.</p>;
+  if (isLoading) {
+    return <p className="noVotings">Cargando...</p>;
+  }
+
+  if (!processedVotings.length) {
+    return (
+      <p className="noVotings">
+        {loadError || "No hay votaciones disponibles."}
+      </p>
+    );
   }
 
   return (
     <div className="voteListContainer">
-      {votings.map((voting) => {
-        // Forzamos que ambos sean string para evitar que "1" !== 1
-        const isSelected = selectedVoting?.Config_ID?.toString() === voting.Config_ID?.toString();
-        
+      {processedVotings.map((voting) => {
+        const isSelected =
+          selectedVoting?.Config_ID?.toString() ===
+          voting.Config_ID?.toString();
+
         return (
           <div
             key={voting.Config_ID}
-            className={`voteObject ${isSelected ? "selected" : ""} ${voting.hasVoted ? "disabled" : ""}`}
-            onClick={() => handleSelect(voting)}
+            className={`voteObject ${isSelected ? "selected" : ""} ${
+              voting.isDisabled ? "disabled" : ""
+            }`}
+            onClick={() =>
+              !voting.isDisabled && setSelectedVoting(voting)
+            }
           >
             <div className="divObj">
-              {voting.Name}
-              {voting.hasVoted && <span className="votedBadge"> (Ya votaste)</span>}
+              <div className="voteName">{voting.Name}</div>
+
+              <div className="voteAdmin">
+                Encargado: {voting.admin}
+              </div>
+
+              {voting.statusLabel && (
+                <span className="votedBadge">
+                  {voting.statusLabel}
+                </span>
+              )}
             </div>
           </div>
         );
