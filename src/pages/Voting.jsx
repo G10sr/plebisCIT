@@ -12,6 +12,7 @@ function Vote() {
     const [partidos, setPartidos] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
+    const [votoNuloId, setVotoNuloId] = useState(null);
     
     const navigate = useNavigate();
     const location = useLocation();
@@ -41,18 +42,27 @@ function Vote() {
                 if (!res.ok) throw new Error("Error cargando opciones");
 
                 const data = await res.json();
-                
-                // Transformar datos de BD a formato esperado por PartidoCard
-                const transformedPartidos = data.map((opt, idx) => ({
-                    id: opt.id || idx,
-                    nombre: opt.Name,
-                    descripcionCorta: opt.Des || opt.Name,
-                    descripcionLarga: opt.Des || opt.Name,
-                    imagenes: [opt.Img1, opt.Img2, opt.Img3, opt.Img4, opt.Img5].filter(Boolean),
-                    color: opt.Color || "#9ecbff",
-                }));
 
-                // Agregar opción de "No votar" al final
+                // 👇 encontrar voto nulo en la BD
+                const votoNulo = data.find(opt => opt.Name === "Voto Nulo");
+
+                if (votoNulo) {
+                    setVotoNuloId(votoNulo.id);
+                }
+
+                // 👇 transformar normal (NO quitar nulo si no quieres)
+                const transformedPartidos = data
+                    .filter(opt => opt.Name !== "Voto Nulo") // 👈 elimina el nulo de BD
+                    .map((opt, idx) => ({
+                        id: opt.id || idx,
+                        nombre: opt.Name,
+                        descripcionCorta: opt.Des || opt.Name,
+                        descripcionLarga: opt.Des || opt.Name,
+                        imagenes: [opt.Img1, opt.Img2, opt.Img3, opt.Img4, opt.Img5].filter(Boolean),
+                        color: opt.Color || "#9ecbff",
+                    }));
+
+                // 👇 tu opción visual sigue siendo 0
                 transformedPartidos.push({ id: 0 });
 
                 setPartidos(transformedPartidos);
@@ -159,9 +169,17 @@ function Vote() {
                             }}
                             disabled={!confirmado}
                             onClick={() => {
-                                alert(`¡Voto enviado! ID = ${partidoSeleccionado}`);
-                                navigate("/voteConfirm", {replace:true});
-                            }}
+                            const idFinal = partidoSeleccionado === 0
+                                ? votoNuloId
+                                : partidoSeleccionado;
+
+                            alert(`¡Voto enviado! ID = ${idFinal}`);
+
+                            // 👇 aquí deberías enviar idFinal al backend
+                            // await fetch('/api/vote', { method: 'POST', body: JSON.stringify({ id: idFinal }) })
+
+                            navigate("/voteConfirm", { replace: true });
+                        }}
                         >
                             Enviar Voto
                         </button>

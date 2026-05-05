@@ -1,3 +1,4 @@
+import { width } from "@fortawesome/free-brands-svg-icons/fa11ty";
 import React, { useState } from "react";
 
 function PartidoModal({ partido, onClose, onSelect }) {
@@ -42,7 +43,12 @@ function PartidoModal({ partido, onClose, onSelect }) {
 
 
                 {/* CARRUSEL */}
-                <div style={styles.carrusel}>
+                <div
+                    style={{
+                        ...styles.carrusel,
+                        backgroundColor: partido.color || "#9ecbff"
+                    }}
+                >                    
                     <img
                         src={partido.imagenes[index]}
                         style={styles.image}
@@ -119,10 +125,11 @@ const styles = {
     closeButton: {
         position: "absolute",
         top: 12,
-        right: -110,
+        right: 12,
         border: "none",
-        background: "transparent",
+        background: "#ffffffb0",
         fontSize: 24,
+        width:"fit-content",
         cursor: "pointer",
     },
     texto: {
@@ -145,7 +152,6 @@ const styles = {
 
     carrusel: {
         flex: 1,
-        backgroundColor: "#9ecbff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
