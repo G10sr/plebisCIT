@@ -1,3 +1,21 @@
+/**
+ * CONFIGURACIÓN: ESLINT
+ * 
+ * Reglas de linting para mantener calidad de código.
+ * 
+ * Incluye:
+ * - Recomendaciones de JavaScript (js.configs.recommended)
+ * - Reglas para hooks de React
+ * - Configuración para React Fast Refresh
+ * - Soporte para JSX
+ * 
+ * Reglas personalizadas:
+ * - no-unused-vars: Ignora variables que comienzan con mayúscula o _ (constantes/tipos)
+ * 
+ * Archivos ignorados:
+ * - /dist (compilación final)
+ */
+
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'

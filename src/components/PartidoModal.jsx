@@ -1,8 +1,29 @@
 import { width } from "@fortawesome/free-brands-svg-icons/fa11ty";
 import React, { useState } from "react";
 
+/**
+ * COMPONENTE: MODAL DE OPCiÓN
+ * 
+ * Modal ampliado que muestra:
+ * - Descripción completa de la opción
+ * - Carrusel de imágenes
+ * - Botón para seleccionar esta opción como voto
+ * 
+ * Funcionalidades:
+ * - Navegación entre imágenes con botones prev/next
+ * - Indicadores de página (dots) si hay múltiples imágenes
+ * - Botón cerrar para volver a la selección
+ * 
+ * Props:
+ * - partido: Objeto con datos de la opción
+ * - onClose: Función al cerrar el modal
+ * - onSelect: Función al seleccionar esta opción
+ */
 function PartidoModal({ partido, onClose, onSelect }) {
+    // Índice de la imagen actual en el carrusel
     const [index, setIndex] = useState(0);
+    
+    // Detectar si hay múltiples imágenes para habilitar navegación
     const hayVariasImagenes = partido.imagenes.length > 1;
 
     const prev = () => {

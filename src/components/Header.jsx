@@ -3,10 +3,25 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../assets/css/Header.css";
 import Logo from "../assets/img/logo.png";
 
+/**
+ * COMPONENTE: ENCABEZADO
+ * 
+ * Barra de navegación superior que:
+ * - Muestra el logo de la aplicación
+ * - Proporciona botones de navegación contextuales
+ * - Oculta botones en ciertas rutas (votación en curso)
+ * 
+ * Comportamiento de navegación:
+ * - Home: Muestra botón para ir a Admin
+ * - Admin: Muestra botón para volver a Home
+ * - Subpáginas de Admin: Muestra botón para volver a Admin
+ * - Durante votación: Oculta todos los botones
+ */
 function Header() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    // Textos para los botones
     const [text] = useState({
         alt: "PlebisCIT logo",
         option1: "Administrador >",
@@ -15,24 +30,29 @@ function Header() {
 
     const currentPath = location.pathname;
 
-    // 1. Rutas donde no se muestra ningún botón
+    // Rutas donde la navegación no debe ser visible (Durante votación activa)
     const hideButtonsPaths = ["/menuvoting", "/vote", "/voteConfirm"];
     const shouldHide = hideButtonsPaths.includes(currentPath);
 
+    // Detectar página actual
     const isHome = currentPath === "/" || currentPath === "/home";
     const isAdmin = currentPath === "/admin";
-    // 2. Detectamos si estamos en una subpágina de admin
     const isAdminSubPage = currentPath === "/menuvotingAdmin" || currentPath === "/adminsettings";
 
+    /**
+     * Manejar navegación entre secciones
+     * @param {string} target - Destino: 'admin', 'home', 'toAdminRoot', 'back'
+     */
     const handleNavigation = (target) => {
         if (target === "admin") {
             navigate("/admin", { replace: true });
         } else if (target === "home") {
             navigate("/", { replace: true });
         } else if (target === "toAdminRoot") {
-            // 3. Si estamos en una subpágina de admin, volvemos a la raíz de admin
+            // Desde subpáginas de admin volver a la raíz
             navigate("/admin", { replace: true });
         } else {
+            // Volver a la página anterior
             navigate(-1, { replace: true });
         }
     };

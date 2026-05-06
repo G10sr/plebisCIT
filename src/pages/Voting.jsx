@@ -4,23 +4,51 @@ import PartidoCard from "../components/PartidoCard";
 import PartidoModal from "../components/PartidoModal";
 import img from '../assets/img/CRvotos.png';
 
+/**
+ * PÁGINA DE VOTACIÓN
+ * 
+ * Componente principal que permite a los usuarios:
+ * 1. Ver todas las opciones disponibles para una votación
+ * 2. Seleccionar una opción
+ * 3. Confirmar su voto con una casilla de verificación
+ * 4. Registrar el voto en la base de datos
+ */
 function Vote() {
+    // Estado del partido seleccionado por el usuario
     const [partidoSeleccionado, setPartidoSeleccionado] = useState(null);
+    
+    // Estado del partido en el que se abrió el modal
     const [partidoActivo, setPartidoActivo] = useState(null);
+    
+    // Estado de confirmación del voto (checkbox)
     const [confirmado, setConfirmado] = useState(false);
+    
+    // Detectar si es pantalla móvil (< 768px)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    
+    // Lista de opciones de votación transformadas
     const [partidos, setPartidos] = useState([]);
+    
+    // Estados de carga
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
+    
+    // ID del voto nulo (obtenido de la BD)
     const [votoNuloId, setVotoNuloId] = useState(null);
+    
+    // Estado para controlar el envío del voto
     const [enviandoVoto, setEnviandoVoto] = useState(false);
 
+    // Router hooks
     const navigate = useNavigate();
     const location = useLocation();
     const voting = location.state?.voting;
     const cedula = location.state?.cedula;
 
-    // 👇 Detectar resize
+    /**
+     * Effect: Detectar cambios de tamaño de pantalla
+     * Ajusta el layout entre móvil y desktop
+     */
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
@@ -29,7 +57,16 @@ function Vote() {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // 👇 Cargar opciones de votación desde la BD
+    /**
+     * Effect: Cargar opciones de votación desde la API
+     * 
+     * Proceso:
+     * 1. Obtener todas las opciones de la votación
+     * 2. Buscar el ID del "Voto Nulo" en la base de datos
+     * 3. Filtrar opciones para ocultar "Voto Nulo" y "Not Defined"
+     * 4. Transformar datos al formato esperado por PartidoCard
+     * 5. Agregar la opción visual del voto nulo al final (id: 0)
+     */
     useEffect(() => {
         if (!voting?.Name) {
             setLoadError("No se especificó la votación");
@@ -45,16 +82,15 @@ function Vote() {
 
                 const data = await res.json();
 
-                // 👇 encontrar voto nulo en la BD
+                // Buscar el ID real del voto nulo en la base de datos
                 const votoNulo = data.find(opt => opt.Name === "Voto Nulo");
-
                 if (votoNulo) {
                     setVotoNuloId(votoNulo.id);
                 }
 
-                // 👇 transformar normal (NO quitar nulo si no quieres)
+                // Filtrar opciones del sistema y transformar al formato esperado
                 const transformedPartidos = data
-                    .filter(opt => opt.Name !== "Voto Nulo" && opt.Name !== "Not Defined") // 👈 elimina el nulo y Not Defined de BD
+                    .filter(opt => opt.Name !== "Voto Nulo" && opt.Name !== "Not Defined")
                     .map((opt, idx) => ({
                         id: opt.id || idx,
                         nombre: opt.Name,
@@ -64,7 +100,7 @@ function Vote() {
                         color: opt.Color || "#9ecbff",
                     }));
 
-                // 👇 tu opción visual sigue siendo 0
+                // Agregar opción visual del voto nulo al final
                 transformedPartidos.push({ id: 0 });
 
                 setPartidos(transformedPartidos);
@@ -80,10 +116,12 @@ function Vote() {
         fetchOptions();
     }, [voting?.Name]);
 
+    // Mostrar estado de carga
     if (isLoading) {
         return <p style={{ textAlign: "center", paddingTop: "100px" }}>Cargando opciones...</p>;
     }
 
+    // Mostrar mensaje de error
     if (loadError) {
         return <p style={{ textAlign: "center", paddingTop: "100px", color: "red" }}>{loadError}</p>;
     }
@@ -101,6 +139,7 @@ function Vote() {
                 paddingBottom: "60px",
             }}
         >
+            {/* Grid de opciones de votación */}
             <div style={styles.overlay}>
                 <div style={{
                     ...styles.grid,
@@ -109,20 +148,24 @@ function Vote() {
                 }}>
                     {partidos.map((p) => (
                         <div key={p.id}>
+                            {/* Tarjeta visual de cada opción */}
                             <PartidoCard
                                 partido={p}
                                 seleccionado={partidoSeleccionado === p.id}
                                 onClick={() => {
                                     if (p.id === 0) {
+                                        // Voto nulo: seleccionar directamente
                                         setPartidoSeleccionado(0);
                                         setPartidoActivo(null);
                                         setConfirmado(false);
                                     } else {
+                                        // Otros votos: abrir modal
                                         setPartidoActivo(p.id);
                                     }
                                 }}
                             />
 
+                            {/* Modal de confirmación de selección */}
                             {partidoActivo === p.id && (
                                 <PartidoModal
                                     partido={p}
@@ -139,7 +182,7 @@ function Vote() {
                 </div>
             </div>
 
-            {/* 👇 Confirmación */}
+            {/* Panel de confirmación y envío de voto */}
             {partidoSeleccionado !== null && (
                 <div style={styles.confirmWrapper}>
                     <div style={{
@@ -149,6 +192,7 @@ function Vote() {
                         width: isMobile ? "90%" : "900px",
                         alignItems: isMobile ? "flex-start" : "center"
                     }}>
+                        {/* Sección de confirmación con checkbox */}
                         <div style={styles.leftSection}>
                             <label style={styles.checkboxLabel}>
                                 <input
@@ -157,11 +201,11 @@ function Vote() {
                                     checked={confirmado}
                                     onChange={(e) => setConfirmado(e.target.checked)}
                                 />
-
                             </label>
                             Estoy consciente de la elección que estoy tomando en mi voto.
                         </div>
 
+                        {/* Botón de envío de voto */}
                         <button
                             style={{
                                 ...styles.boton,
@@ -171,6 +215,7 @@ function Vote() {
                             }}
                             disabled={!confirmado || enviandoVoto}
                             onClick={async () => {
+                                // Obtener el ID final del voto
                                 const idFinal = partidoSeleccionado === 0
                                     ? votoNuloId
                                     : partidoSeleccionado;
@@ -178,6 +223,7 @@ function Vote() {
                                 setEnviandoVoto(true);
 
                                 try {
+                                    // Enviar voto al servidor
                                     const response = await fetch('/api/vote', {
                                         method: 'POST',
                                         headers: {
@@ -215,6 +261,7 @@ function Vote() {
     );
 }
 
+// Estilos inline para la página de votación
 const styles = {
     overlay: {
         paddingTop: "40px",

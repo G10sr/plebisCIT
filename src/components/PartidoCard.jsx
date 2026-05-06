@@ -1,6 +1,22 @@
 import React from "react";
 
+/**
+ * COMPONENTE: TARJETA DE OPCiÓN
+ * 
+ * Muestra cada opción de votación en formato de tarjeta.
+ * 
+ * Propiedades:
+ * - partido: Objeto con datos de la opción (id, nombre, descripción, imágenes, color)
+ * - onClick: Función al hacer clic
+ * - seleccionado: Boolean si está seleccionada
+ * 
+ * Estilos especiales:
+ * - Voto nulo: Fondo gris y patrón de línea punteada
+ * - Seleccionado: Borde grueso del color del partido
+ * - Normal: Borde gris estándar
+ */
 function PartidoCard({ partido, onClick, seleccionado }) {
+  // Detectar si es la opción de voto nulo
   const esNulo = partido.id === 0;
 
 

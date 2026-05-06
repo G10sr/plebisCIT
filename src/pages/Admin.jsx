@@ -3,12 +3,33 @@ import React, { useState } from "react";
 import "../assets/css/Admin.css";
 import img from '../assets/img/CRvotos.png';
 
-
+/**
+ * PÁGINA: PANEL DE ADMINISTRACIÓN
+ * 
+ * Pantalla de login para administradores.
+ * 
+ * Campos:
+ * - Correo electrónico
+ * - Contraseña
+ * 
+ * Acciones:
+ * - Validar credenciales del administrador
+ * - Navegar al menú de administración si es válido
+ * 
+ * NOTA: La validación actual es estática. Implementar validación en backend.
+ */
 function Admin() {
-    const [isOpen, setIsOpen] = useState(true); // 👈 ahora inicia abierto
+    // Estado del modal (actualmente no utilizado)
+    const [isOpen, setIsOpen] = useState(true);
+    
+    // Estado del ID de usuario ingresado
     const [idUser, setIdUser] = useState("");
     const navigate = useNavigate();
 
+    /**
+     * Iniciar sesión de administrador
+     * IMPORTANTE: Agregar validación de credenciales en backend
+     */
     const handleStart = () => {
         navigate("/menuvotingAdmin", { replace: true });
     };

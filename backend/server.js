@@ -3,17 +3,39 @@ import cors from "cors";
 import postgres from "postgres";
 import "dotenv/config";
 
+/**
+ * SISTEMA DE VOTACIÓN - BACKEND
+ * 
+ * API REST que maneja:
+ * - Obtención de votaciones disponibles para un usuario
+ * - Carga de opciones de votación
+ * - Registro de votos en la base de datos
+ */
+
+// Inicializar conexión a PostgreSQL
 const sql = postgres(process.env.DATABASE_URL);
 const app = express();
 
+// Middleware para CORS y parseo de JSON
 app.use(cors());
 app.use(express.json());
 
+/**
+ * GET /api/votings/:cedula
+ * 
+ * Obtiene la lista de votaciones disponibles para un usuario específico.
+ * Verifica que:
+ * - La votación no esté oculta (Oculto = false)
+ * - El usuario existe en esa votación (está registrado)
+ * 
+ * @param {string} cedula - Número de cédula del usuario
+ * @returns {Array} Lista de votaciones disponibles con sus detalles
+ */
 app.get("/api/votings/:cedula", async (req, res) => {
   const { cedula } = req.params;
 
   try {
-    // 1. Traer configs visibles
+    // Obtener todas las configuraciones de votación que no están ocultas
     const votingsConfig = await sql`
       SELECT * FROM "Votings_Config"
       WHERE "Oculto" = false
@@ -21,6 +43,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
 
     const votings = [];
 
+    // Procesar cada votación disponible
     for (const voting of votingsConfig) {
       const configId = voting.Config_ID || voting.config_id;
       const name = voting.Name || voting.name;
@@ -31,6 +54,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
         voting.admin ||
         null;
 
+      // Buscar el nombre real del administrador en la tabla adminAccount
       let adminName = "No disponible";
       if (adminUuid) {
         try {
@@ -46,12 +70,14 @@ app.get("/api/votings/:cedula", async (req, res) => {
         }
       }
 
+      // Nombres dinámicos de tablas según el nombre de votación
       const dataTable = `Vote_${name}_Data`;
       const optionsTable = `Vote_${name}_Options`;
 
       let userData;
 
-      // 🔥 VALIDAR SI USUARIO EXISTE EN ESA VOTACIÓN
+      // Validar que el usuario existe en esta votación específica
+      // Si no existe en la tabla de datos, omitir esta votación
       try {
         userData = await sql`
           SELECT hasvoted FROM ${sql(dataTable)}
@@ -59,16 +85,17 @@ app.get("/api/votings/:cedula", async (req, res) => {
         `;
 
         if (userData.length === 0) {
-          continue; // 🚨 CLAVE: ignora votación
+          continue; // Usuario no está registrado en esta votación
         }
       } catch (err) {
         console.warn(`Tabla no válida: ${dataTable}`);
         continue;
       }
 
+      // Obtener estado de voto del usuario
       const hasVoted = !!userData[0].hasvoted;
 
-      // Opciones
+      // Cargar opciones de votación disponibles
       let options = [];
       try {
         const optionsData = await sql`
@@ -77,9 +104,10 @@ app.get("/api/votings/:cedula", async (req, res) => {
         `;
         options = optionsData.map(o => o.Name || o.name);
       } catch {
-        options = ["Opción A", "Opción B"];
+        options = ["Opción A", "Opción B"]; // Fallback si hay error
       }
 
+      // Agregar votación al resultado final
       votings.push({
         Config_ID: configId,
         Name: name,
@@ -100,18 +128,28 @@ app.get("/api/votings/:cedula", async (req, res) => {
   }
 });
 
-
+/**
+ * GET /api/voting-options/:votingName
+ * 
+ * Obtiene todas las opciones disponibles para una votación específica.
+ * Incluye: nombre, descripción, imágenes y color de cada opción.
+ * 
+ * @param {string} votingName - Nombre de la votación
+ * @returns {Array} Lista de opciones con todos sus detalles
+ */
 app.get("/api/voting-options/:votingName", async (req, res) => {
   const { votingName } = req.params;
 
   try {
     const optionsTable = `Vote_${votingName}_Options`;
 
+    // Obtener todas las opciones ordenadas por ID
     const optionsData = await sql`
       SELECT * FROM ${sql(optionsTable)}
       ORDER BY "ID" ASC
     `;
 
+    // Transformar datos con fallbacks para diferentes variantes de nombres de columnas
     const options = optionsData.map((opt) => ({
       id: opt.ID || opt.id,
       Name: opt.Name || opt.name,
@@ -134,9 +172,23 @@ app.get("/api/voting-options/:votingName", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/vote
+ * 
+ * Registra el voto de un usuario en la base de datos.
+ * Actualiza:
+ * - option_id: ID de la opción seleccionada
+ * - hasvoted: Marca el usuario como que ya votó
+ * 
+ * @param {string} cedula - Número de cédula del votante
+ * @param {string} votingName - Nombre de la votación
+ * @param {number} optionId - ID de la opción seleccionada
+ * @returns {Object} Confirmación del registro exitoso o error
+ */
 app.post("/api/vote", async (req, res) => {
   const { cedula, votingName, optionId } = req.body;
 
+  // Validar que todos los datos requeridos estén presentes
   if (!cedula || !votingName || optionId === undefined) {
     return res.status(400).json({ error: "Datos incompletos" });
   }
@@ -144,7 +196,7 @@ app.post("/api/vote", async (req, res) => {
   try {
     const dataTable = `Vote_${votingName}_Data`;
 
-    // Actualizar el registro con option_id y hasvoted = true
+    // Actualizar el registro del usuario con su voto
     const result = await sql`
       UPDATE ${sql(dataTable)}
       SET "option_id" = ${optionId}, "hasvoted" = true
@@ -152,6 +204,7 @@ app.post("/api/vote", async (req, res) => {
       RETURNING *
     `;
 
+    // Verificar si el usuario fue encontrado y actualizado
     if (result.length === 0) {
       return res.status(404).json({ error: "Usuario no encontrado en esta votación" });
     }
@@ -163,6 +216,7 @@ app.post("/api/vote", async (req, res) => {
   }
 });
 
+// Iniciar servidor
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 http://localhost:${PORT}`);

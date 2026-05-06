@@ -1,6 +1,21 @@
-import { useState } from "react";
+/**
+ * PÁGINA: CONFIGURACIÓN DE VOTACIÓN
+ * 
+ * Panel detallado para editar y configurar una votación específica.
+ * Acceso exclusivo para administradores.
+ * 
+ * Funcionalidades:
+ * - Editar nombre y descripción de la votación
+ * - Configurar fechas de inicio y fin
+ * - Administrar opciones de votación
+ * - Activar/desactivar vigencia de la votación
+ * - Aplicar estilos personalizados con CSS inyectado
+ * 
+ * NOTA: Contiene estilos globales inyectados como <style> en el DOM
+ * para mantener una estética coherente en todo el panel administrativo
+ */
 
-// ─── Estilos globales inyectados como <style> ────────────────────────────────
+import { useState } from "react";
 const GLOBAL_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
 

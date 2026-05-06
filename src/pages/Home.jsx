@@ -3,10 +3,27 @@ import React, { useState } from "react";
 import img from '../assets/img/CRvotos.png';
 import "../assets/css/Home.css"
 
+/**
+ * PÁGINA: HOME
+ * 
+ * Página de inicio de la aplicación.
+ * Permite al usuario:
+ * - Ingresar su número de cédula
+ * - Acceder al flujo de votación
+ * 
+ * Validación:
+ * - Requiere que se ingrese una cédula
+ * - Navega a /menuvoting pasando la cédula en el estado
+ */
 function Home() {
+    // Estado del ID ingresado por el usuario
     const [idUser, setIdUser] = useState("");
     const navigate = useNavigate();
 
+    /**
+     * Iniciar flujo de votación
+     * Valida que haya cédula y navega a la lista de votaciones
+     */
     const handleStart = () => {
         if (!idUser) {
             alert("Por favor ingresa tu cédula");
