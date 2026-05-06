@@ -16,7 +16,7 @@ function Header() {
     const currentPath = location.pathname;
 
     // 1. Rutas donde no se muestra ningún botón
-    const hideButtonsPaths = ["/menuvoting", "/vote", "/thanksforvoting"];
+    const hideButtonsPaths = ["/menuvoting", "/vote", "/voteConfirm"];
     const shouldHide = hideButtonsPaths.includes(currentPath);
 
     const isHome = currentPath === "/" || currentPath === "/home";

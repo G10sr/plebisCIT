@@ -24,12 +24,27 @@ app.get("/api/votings/:cedula", async (req, res) => {
     for (const voting of votingsConfig) {
       const configId = voting.Config_ID || voting.config_id;
       const name = voting.Name || voting.name;
-      const admin =
+      const adminUuid =
         voting.usrAdmin ||
         voting.usradmin ||
         voting.Admin ||
         voting.admin ||
         null;
+
+      let adminName = "No disponible";
+      if (adminUuid) {
+        try {
+          const adminData = await sql`
+            SELECT "name_admin" FROM "adminAccount"
+            WHERE "ID" = ${adminUuid}
+          `;
+          if (adminData.length > 0) {
+            adminName = adminData[0].name;
+          }
+        } catch (err) {
+          console.warn("Error obteniendo nombre del admin:", err);
+        }
+      }
 
       const dataTable = `Vote_${name}_Data`;
       const optionsTable = `Vote_${name}_Options`;
@@ -68,7 +83,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
       votings.push({
         Config_ID: configId,
         Name: name,
-        usrAdmin: admin,
+        adminName: adminName,
         options,
         hasVoted,
         Start_time: voting.Start_time ?? voting.start_time ?? null,

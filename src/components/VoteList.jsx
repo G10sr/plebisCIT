@@ -74,6 +74,7 @@ function VoteObject() {
         isDisabled,
         statusLabel,
         admin:
+          v.adminName ||
           v.usrAdmin ||
           v.Admin ||
           v.admin ||
