@@ -24,11 +24,11 @@ function Home() {
             {/* Modal - */}
             <div style={styles.overlay}>
                 <div
-                    style={styles.modal} 
+                    style={styles.modal}
                 >
 
                     <h2>
-                        ¡Bienvenido a{" "} 
+                        ¡Bienvenido a{" "}
                         <span style={{ color: "#3658FA" }}>Pl</span>
                         <span style={{ color: "#b9b9b9" }}>eb</span>
                         <span style={{ color: "#ff0000" }}>i</span>

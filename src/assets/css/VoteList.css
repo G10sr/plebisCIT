@@ -26,11 +26,11 @@
     border-radius: 5px;
     padding: 10px;
     margin-bottom: 10px;
-    
+
     /* Flexbox vertical para separar texto de botones */
     display: flex;
     flex-direction: column;
-    justify-content: space-between; 
+    justify-content: space-between;
 }
 
 .voteObject {
@@ -56,12 +56,15 @@
     color: white;
     transition: 200ms;
 }
+
 .voteObject button:hover {
     color: rgb(0, 0, 0);
 }
+
 .voteObject button:active {
     color: rgb(255, 255, 255);
 }
+
 .voteObject .buttonResult {
     background-color: var(--C-greenHigh, #2ecc71);
 }
@@ -74,12 +77,15 @@
 .voteObject .botonDiv {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end; /* Alinea los botones a la derecha */
-    gap: 8px; /* Espacio pequeño entre botones */
-    margin-top: 10px; /* Asegura separación si el texto es largo */
+    justify-content: flex-end;
+    /* Alinea los botones a la derecha */
+    gap: 8px;
+    /* Espacio pequeño entre botones */
+    margin-top: 10px;
+    /* Asegura separación si el texto es largo */
 }
 
-.enterVoteBtn{
+.enterVoteBtn {
     position: fixed;
     right: 2rem;
     bottom: max(15vh, env(safe-area-inset-bottom, 1rem));

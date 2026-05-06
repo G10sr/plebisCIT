@@ -4,9 +4,10 @@
   transition: 0.2s;
 }
 
-.voteObject.selected .divObj{
+.voteObject.selected .divObj {
   border: 2px solid blue;
 }
+
 .voteObject.disabled {
   opacity: 0.5;
   pointer-events: none;

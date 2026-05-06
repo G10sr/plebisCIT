@@ -6,7 +6,7 @@ import Logo from "../assets/img/logo.png";
 function Header() {
     const location = useLocation();
     const navigate = useNavigate();
-    
+
     const [text] = useState({
         alt: "PlebisCIT logo",
         option1: "Administrador >",
@@ -14,7 +14,7 @@ function Header() {
     });
 
     const currentPath = location.pathname;
-    
+
     // 1. Rutas donde no se muestra ningún botón
     const hideButtonsPaths = ["/menuvoting", "/vote", "/thanksforvoting"];
     const shouldHide = hideButtonsPaths.includes(currentPath);
@@ -33,7 +33,7 @@ function Header() {
             // 3. Si estamos en una subpágina de admin, volvemos a la raíz de admin
             navigate("/admin", { replace: true });
         } else {
-            navigate(-1, {replace: true});
+            navigate(-1, { replace: true });
         }
     };
 

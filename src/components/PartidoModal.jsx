@@ -48,7 +48,7 @@ function PartidoModal({ partido, onClose, onSelect }) {
                         ...styles.carrusel,
                         backgroundColor: partido.color || "#9ecbff"
                     }}
-                >                    
+                >
                     <img
                         src={partido.imagenes[index]}
                         style={styles.image}
@@ -129,7 +129,7 @@ const styles = {
         border: "none",
         background: "#ffffffb0",
         fontSize: 24,
-        width:"fit-content",
+        width: "fit-content",
         cursor: "pointer",
     },
     texto: {

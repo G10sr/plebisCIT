@@ -19,7 +19,7 @@ function VoteObjectAdmin() {
 
   return (
     <div className="voteListContainer">
-      
+
       {/* Columna izquierda */}
       <div className="column">
         {leftColumn.map((product) => (
@@ -28,22 +28,22 @@ function VoteObjectAdmin() {
               {product.name}
               <div className="botonDiv">
                 {/* SETTINGS */}
-                  <button
-                    className="buttonEdit"
-                    onClick={() => navigate(`/adminsettings/${product.id}`)}
-                    title="Configuración"
-                  >
-                    <FontAwesomeIcon icon={faGear} />
-                  </button>
+                <button
+                  className="buttonEdit"
+                  onClick={() => navigate(`/adminsettings/${product.id}`)}
+                  title="Configuración"
+                >
+                  <FontAwesomeIcon icon={faGear} />
+                </button>
 
-                  {/* RESULTS */}
-                  <button
-                    className="buttonResult"
-                    onClick={() => navigate(`/resultsvoting/${product.id}`)}
-                    title="Resultados"
-                  >
-                    <FontAwesomeIcon icon={faSquarePollHorizontal} />
-                  </button>
+                {/* RESULTS */}
+                <button
+                  className="buttonResult"
+                  onClick={() => navigate(`/resultsvoting/${product.id}`)}
+                  title="Resultados"
+                >
+                  <FontAwesomeIcon icon={faSquarePollHorizontal} />
+                </button>
               </div>
             </div>
           </div>
@@ -58,22 +58,22 @@ function VoteObjectAdmin() {
               {product.name}
               <div className="botonDiv">
                 {/* SETTINGS */}
-                  <button
-                    className="buttonEdit"
-                    onClick={() => navigate(`/adminsettings/${product.id}`, {replace: true})}
-                    title="Configuración"
-                  >
-                    <FontAwesomeIcon icon={faGear} />
-                  </button>
+                <button
+                  className="buttonEdit"
+                  onClick={() => navigate(`/adminsettings/${product.id}`, { replace: true })}
+                  title="Configuración"
+                >
+                  <FontAwesomeIcon icon={faGear} />
+                </button>
 
-                  {/* RESULTS */}
-                  <button
-                    className="buttonResult"
-                    onClick={() => navigate(`/resultsvoting/${product.id}`, {replace: true})}
-                    title="Resultados"
-                  >
-                    <FontAwesomeIcon icon={faSquarePollHorizontal} />
-                  </button>
+                {/* RESULTS */}
+                <button
+                  className="buttonResult"
+                  onClick={() => navigate(`/resultsvoting/${product.id}`, { replace: true })}
+                  title="Resultados"
+                >
+                  <FontAwesomeIcon icon={faSquarePollHorizontal} />
+                </button>
               </div>
             </div>
           </div>

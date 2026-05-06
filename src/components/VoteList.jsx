@@ -111,9 +111,8 @@ function VoteObject() {
         return (
           <div
             key={voting.Config_ID}
-            className={`voteObject ${isSelected ? "selected" : ""} ${
-              voting.isDisabled ? "disabled" : ""
-            }`}
+            className={`voteObject ${isSelected ? "selected" : ""} ${voting.isDisabled ? "disabled" : ""
+              }`}
             onClick={() =>
               !voting.isDisabled && setSelectedVoting(voting)
             }

@@ -14,7 +14,7 @@ function Vote() {
     const [loadError, setLoadError] = useState(null);
     const [votoNuloId, setVotoNuloId] = useState(null);
     const [enviandoVoto, setEnviandoVoto] = useState(false);
-    
+
     const navigate = useNavigate();
     const location = useLocation();
     const voting = location.state?.voting;
@@ -157,7 +157,7 @@ function Vote() {
                                     checked={confirmado}
                                     onChange={(e) => setConfirmado(e.target.checked)}
                                 />
-                                
+
                             </label>
                             Estoy consciente de la elección que estoy tomando en mi voto.
                         </div>
@@ -171,40 +171,40 @@ function Vote() {
                             }}
                             disabled={!confirmado || enviandoVoto}
                             onClick={async () => {
-                            const idFinal = partidoSeleccionado === 0
-                                ? votoNuloId
-                                : partidoSeleccionado;
+                                const idFinal = partidoSeleccionado === 0
+                                    ? votoNuloId
+                                    : partidoSeleccionado;
 
-                            setEnviandoVoto(true);
+                                setEnviandoVoto(true);
 
-                            try {
-                                const response = await fetch('/api/vote', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        cedula: cedula,
-                                        votingName: voting.Name,
-                                        optionId: idFinal
-                                    })
-                                });
+                                try {
+                                    const response = await fetch('/api/vote', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            cedula: cedula,
+                                            votingName: voting.Name,
+                                            optionId: idFinal
+                                        })
+                                    });
 
-                                if (!response.ok) {
-                                    const error = await response.json();
-                                    alert(`Error: ${error.error || 'Error al registrar el voto'}`);
+                                    if (!response.ok) {
+                                        const error = await response.json();
+                                        alert(`Error: ${error.error || 'Error al registrar el voto'}`);
+                                        setEnviandoVoto(false);
+                                        return;
+                                    }
+
+                                    alert('¡Voto registrado correctamente!');
+                                    navigate("/voteConfirm", { replace: true });
+                                } catch (err) {
+                                    console.error("Error enviando voto:", err);
+                                    alert("Error al enviar el voto. Intenta nuevamente.");
                                     setEnviandoVoto(false);
-                                    return;
                                 }
-
-                                alert('¡Voto registrado correctamente!');
-                                navigate("/voteConfirm", { replace: true });
-                            } catch (err) {
-                                console.error("Error enviando voto:", err);
-                                alert("Error al enviar el voto. Intenta nuevamente.");
-                                setEnviandoVoto(false);
-                            }
-                        }}
+                            }}
                         >
                             {enviandoVoto ? "Enviando..." : "Enviar Voto"}
                         </button>

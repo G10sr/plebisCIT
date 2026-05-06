@@ -2,7 +2,7 @@ import React from "react";
 
 function PartidoCard({ partido, onClick, seleccionado }) {
   const esNulo = partido.id === 0;
-  
+
 
   return (
     <div
@@ -13,8 +13,8 @@ function PartidoCard({ partido, onClick, seleccionado }) {
         border: seleccionado
           ? `3px solid ${partido.color || "#2f80ed"}`
           : esNulo
-          ? "3px dashed #4d4d4d"
-          : "2px solid rgb(180, 180, 180)",
+            ? "3px dashed #4d4d4d"
+            : "2px solid rgb(180, 180, 180)",
 
         backgroundColor: esNulo ? "#adadad" : "#fff",
 

@@ -8,7 +8,7 @@ function MenuVotingAdmin() {
         <section>
             <hr />
             <div className="VotingList">
-                <VoteListAdmin/>
+                <VoteListAdmin />
             </div>
         </section>
     );

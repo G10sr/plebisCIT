@@ -8,12 +8,12 @@ function Admin() {
     const [isOpen, setIsOpen] = useState(true); // 👈 ahora inicia abierto
     const [idUser, setIdUser] = useState("");
     const navigate = useNavigate();
-    
+
     const handleStart = () => {
         navigate("/menuvotingAdmin", { replace: true });
     };
 
-    return (    
+    return (
         <section
             className="fondo-container"
             style={{ backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),url(${img})` }}
@@ -48,7 +48,7 @@ function Admin() {
                         />
                     </div>
                     <p>Si no tienes cuenta, contacta soporte.</p>
-                    <button name="enterAdmin"  onClick={handleStart}>Entrar Modo Administrador</button>
+                    <button name="enterAdmin" onClick={handleStart}>Entrar Modo Administrador</button>
                 </div>
             </div>
 

@@ -1,4 +1,4 @@
- import { useState } from "react";
+import { useState } from "react";
 
 // ─── Estilos globales inyectados como <style> ────────────────────────────────
 const GLOBAL_CSS = `
@@ -240,9 +240,10 @@ function Toggle({ checked, onChange }) {
 function OptionCard({ index, option, onChange, onRemove }) {
   const update = (key) => (e) => onChange(index, { ...option, [key]: e.target.value });
   const handleFiles = (e) => {
-  const files = Array.from(e.target.files).slice(0, 5);
-  onChange(index, { ...option, imagenes: files });
-``};
+    const files = Array.from(e.target.files).slice(0, 5);
+    onChange(index, { ...option, imagenes: files });
+    ``
+  };
 
   return (
     <div
@@ -376,23 +377,23 @@ export default function NuevaVotacion() {
   ]);
   const [votacionTerminada, setVotacionTerminada] = useState(false);
   const TAG_OPTIONS = [
-  "7°",
-  "8°",
-  "9°",
-  "10°",
-  "11°",
-  "12°",
-  "Profesores",
-  "Todos",
-  "No definido",
-];
+    "7°",
+    "8°",
+    "9°",
+    "10°",
+    "11°",
+    "12°",
+    "Profesores",
+    "Todos",
+    "No definido",
+  ];
 
   const updateOptionColor = (index, color) =>
-  setOptions((prev) =>
-    prev.map((o, i) =>
-      i === index ? { ...o, color } : o
-    )
-  );
+    setOptions((prev) =>
+      prev.map((o, i) =>
+        i === index ? { ...o, color } : o
+      )
+    );
 
   const toggleGrupo = (label) => setGrupos((prev) => ({ ...prev, [label]: !prev[label] }));
 
@@ -485,111 +486,111 @@ export default function NuevaVotacion() {
               </>
             ))}
           </div>
-          
+
           {/* CSV */}
           {/* CSV */}
-<div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
-  <div style={{ textAlign: "right", maxWidth: 260 }}>
-    
-    <label style={btnSecondaryStyle}>
-      Insertar Datos por CSV
-      <input
-        type="file"
-        accept=".csv"
-        multiple
-        onChange={(e) => {
-            const files = Array.from(e.target.files);
-            const newFiles = files.map((f) => ({ file: f, tag: "" }));
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
+            <div style={{ textAlign: "right", maxWidth: 260 }}>
 
-            setCsvFiles((prev) => [...prev, ...newFiles]);
+              <label style={btnSecondaryStyle}>
+                Insertar Datos por CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files);
+                    const newFiles = files.map((f) => ({ file: f, tag: "" }));
 
-            // 🔥 reset para permitir volver a seleccionar el mismo archivo
-            e.target.value = null;
-          }}
-        style={{ display: "none" }}
-      />
-    </label>
+                    setCsvFiles((prev) => [...prev, ...newFiles]);
 
-    {/* Lista de archivos */}
-    {csvFiles.length > 0 && (
-      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
-        {csvFiles.map((item, i) => (
-          <div
-            key={i}
-            style={{
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              borderRadius: 8,
-              padding: "8px 10px",
-              boxShadow: "var(--shadow)",
-              textAlign: "left",
-              position: "relative",
-            }}
-          >
-            {/* eliminar */}
-            <button
-              onClick={() => {
-                setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
-              }}
-              style={{
-                position: "absolute",
-                top: 6,
-                right: 8,
-                border: "none",
-                background: "none",
-                cursor: "pointer",
-                fontSize: 14,
-                color: "var(--muted)",
-              }}
-            >
-              ×
-            </button>
+                    // 🔥 reset para permitir volver a seleccionar el mismo archivo
+                    e.target.value = null;
+                  }}
+                  style={{ display: "none" }}
+                />
+              </label>
 
-            {/* nombre archivo */}
-            <div style={{ fontSize: 12, marginBottom: 6 }}>
-              {item.file.name}
+              {/* Lista de archivos */}
+              {csvFiles.length > 0 && (
+                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
+                  {csvFiles.map((item, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 8,
+                        padding: "8px 10px",
+                        boxShadow: "var(--shadow)",
+                        textAlign: "left",
+                        position: "relative",
+                      }}
+                    >
+                      {/* eliminar */}
+                      <button
+                        onClick={() => {
+                          setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: 6,
+                          right: 8,
+                          border: "none",
+                          background: "none",
+                          cursor: "pointer",
+                          fontSize: 14,
+                          color: "var(--muted)",
+                        }}
+                      >
+                        ×
+                      </button>
+
+                      {/* nombre archivo */}
+                      <div style={{ fontSize: 12, marginBottom: 6 }}>
+                        {item.file.name}
+                      </div>
+
+                      {/* tag */}
+                      <select
+                        value={item.tag}
+                        onChange={(e) => {
+                          const updated = [...csvFiles];
+                          updated[i].tag = e.target.value;
+                          setCsvFiles(updated);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "6px 8px",
+                          borderRadius: 6,
+                          border: "1px solid var(--border)",
+                          fontSize: 12,
+                          outline: "none",
+                          background: "var(--surface)",
+                          color: item.tag ? "var(--text)" : "var(--muted)",
+                        }}
+                      >
+                        <option value="">Seleccionar grupo...</option>
+                        {TAG_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
+                Importar los datos de las personas<br />
+                legibles para esta votación.<br />
+                (Esto les permitirá acceder y votar<br />
+                cuando las votaciones se publiquen)
+              </p>
+
             </div>
-
-            {/* tag */}
-           <select
-              value={item.tag}
-              onChange={(e) => {
-                const updated = [...csvFiles];
-                updated[i].tag = e.target.value;
-                setCsvFiles(updated);
-              }}
-              style={{
-                width: "100%",
-                padding: "6px 8px",
-                borderRadius: 6,
-                border: "1px solid var(--border)",
-                fontSize: 12,
-                outline: "none",
-                background: "var(--surface)",
-                color: item.tag ? "var(--text)" : "var(--muted)",
-              }}
-            >
-              <option value="">Seleccionar grupo...</option>
-              {TAG_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <p style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
-              Importar los datos de las personas<br />
-              legibles para esta votación.<br />
-              (Esto les permitirá acceder y votar<br />
-              cuando las votaciones se publiquen)
-            </p>
-
           </div>
-        </div>
         </div>
 
         <hr style={{ border: "none", borderTop: "1.5px solid var(--border)", margin: "36px 0" }} />
@@ -671,45 +672,45 @@ export default function NuevaVotacion() {
           Crear Votación
         </button>
         <button
-  onClick={() => {
-    const confirmar = window.confirm("¿Seguro que quieres terminar la votación?");
-    if (confirmar) {
-      setVotacionTerminada(true);
+          onClick={() => {
+            const confirmar = window.confirm("¿Seguro que quieres terminar la votación?");
+            if (confirmar) {
+              setVotacionTerminada(true);
 
-      // opcional: aquí podrías mandar a backend
-      console.log("Votación terminada");
+              // opcional: aquí podrías mandar a backend
+              console.log("Votación terminada");
 
-      alert("Votación finalizada");
-    }
-  }}
-  style={{
-    display: "block",
-    marginLeft: "auto",
-    marginTop: 12,
-    padding: "12px 36px",
-    border: "1.5px solid #e74c3c",
-    borderRadius: 99,
-    background: "transparent",
-    color: "#e74c3c",
-    fontFamily: "'DM Sans', sans-serif",
-    fontSize: 14.5,
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "transform 0.15s, background 0.2s, color 0.2s",
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.background = "#e74c3c";
-    e.currentTarget.style.color = "#fff";
-    e.currentTarget.style.transform = "translateY(-1px)";
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.background = "transparent";
-    e.currentTarget.style.color = "#e74c3c";
-    e.currentTarget.style.transform = "translateY(0)";
-  }}
->
-  Terminar votación
-</button>
+              alert("Votación finalizada");
+            }
+          }}
+          style={{
+            display: "block",
+            marginLeft: "auto",
+            marginTop: 12,
+            padding: "12px 36px",
+            border: "1.5px solid #e74c3c",
+            borderRadius: 99,
+            background: "transparent",
+            color: "#e74c3c",
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 14.5,
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "transform 0.15s, background 0.2s, color 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#e74c3c";
+            e.currentTarget.style.color = "#fff";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "#e74c3c";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          Terminar votación
+        </button>
       </div>
     </>
   );

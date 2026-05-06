@@ -8,7 +8,7 @@ function MenuVoting() {
         <section>
             <hr />
             <div className="VotingList">
-                <VoteList/>
+                <VoteList />
             </div>
         </section>
     );

@@ -1,8 +1,8 @@
-function Results(){
-   return(
-    <section>
+function Results() {
+   return (
+      <section>
 
-    </section>
-   )   
+      </section>
+   )
 }
 export default Results;
