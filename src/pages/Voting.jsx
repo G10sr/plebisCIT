@@ -13,10 +13,12 @@ function Vote() {
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
     const [votoNuloId, setVotoNuloId] = useState(null);
+    const [enviandoVoto, setEnviandoVoto] = useState(false);
     
     const navigate = useNavigate();
     const location = useLocation();
     const voting = location.state?.voting;
+    const cedula = location.state?.cedula;
 
     // 👇 Detectar resize
     useEffect(() => {
@@ -52,7 +54,7 @@ function Vote() {
 
                 // 👇 transformar normal (NO quitar nulo si no quieres)
                 const transformedPartidos = data
-                    .filter(opt => opt.Name !== "Voto Nulo") // 👈 elimina el nulo de BD
+                    .filter(opt => opt.Name !== "Voto Nulo" && opt.Name !== "Not Defined") // 👈 elimina el nulo y Not Defined de BD
                     .map((opt, idx) => ({
                         id: opt.id || idx,
                         nombre: opt.Name,
@@ -167,21 +169,44 @@ function Vote() {
                                 cursor: confirmado ? "pointer" : "not-allowed",
                                 width: isMobile ? "100%" : "auto"
                             }}
-                            disabled={!confirmado}
-                            onClick={() => {
+                            disabled={!confirmado || enviandoVoto}
+                            onClick={async () => {
                             const idFinal = partidoSeleccionado === 0
                                 ? votoNuloId
                                 : partidoSeleccionado;
 
-                            alert(`¡Voto enviado! ID = ${idFinal}`);
+                            setEnviandoVoto(true);
 
-                            // 👇 aquí deberías enviar idFinal al backend
-                            // await fetch('/api/vote', { method: 'POST', body: JSON.stringify({ id: idFinal }) })
+                            try {
+                                const response = await fetch('/api/vote', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        cedula: cedula,
+                                        votingName: voting.Name,
+                                        optionId: idFinal
+                                    })
+                                });
 
-                            navigate("/voteConfirm", { replace: true });
+                                if (!response.ok) {
+                                    const error = await response.json();
+                                    alert(`Error: ${error.error || 'Error al registrar el voto'}`);
+                                    setEnviandoVoto(false);
+                                    return;
+                                }
+
+                                alert('¡Voto registrado correctamente!');
+                                navigate("/voteConfirm", { replace: true });
+                            } catch (err) {
+                                console.error("Error enviando voto:", err);
+                                alert("Error al enviar el voto. Intenta nuevamente.");
+                                setEnviandoVoto(false);
+                            }
                         }}
                         >
-                            Enviar Voto
+                            {enviandoVoto ? "Enviando..." : "Enviar Voto"}
                         </button>
                     </div>
                 </div>

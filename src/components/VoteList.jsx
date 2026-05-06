@@ -86,7 +86,7 @@ function VoteObject() {
 
   const handleContinue = () => {
     if (!selectedVoting) return;
-    navigate("/vote", { state: { voting: selectedVoting }, replace: true });
+    navigate("/vote", { state: { voting: selectedVoting, cedula: cedula }, replace: true });
   };
 
   if (isLoading) {

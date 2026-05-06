@@ -85,9 +85,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
   }
 });
 
-/* =============================================
-   ENDPOINT: OBTENER OPCIONES DE UNA VOTACIÓN
-   ============================================= */
+
 app.get("/api/voting-options/:votingName", async (req, res) => {
   const { votingName } = req.params;
 
@@ -118,6 +116,35 @@ app.get("/api/voting-options/:votingName", async (req, res) => {
       error: `No se pudieron cargar las opciones para ${votingName}`,
       message: err.message,
     });
+  }
+});
+
+app.post("/api/vote", async (req, res) => {
+  const { cedula, votingName, optionId } = req.body;
+
+  if (!cedula || !votingName || optionId === undefined) {
+    return res.status(400).json({ error: "Datos incompletos" });
+  }
+
+  try {
+    const dataTable = `Vote_${votingName}_Data`;
+
+    // Actualizar el registro con option_id y hasvoted = true
+    const result = await sql`
+      UPDATE ${sql(dataTable)}
+      SET "option_id" = ${optionId}, "hasvoted" = true
+      WHERE "ced" = ${cedula}
+      RETURNING *
+    `;
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado en esta votación" });
+    }
+
+    res.json({ success: true, message: "Voto registrado correctamente" });
+  } catch (err) {
+    console.error("Error registrando voto:", err.message);
+    res.status(500).json({ error: "Error registrando el voto" });
   }
 });
 
