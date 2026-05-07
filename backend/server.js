@@ -63,7 +63,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
             WHERE "ID" = ${adminUuid}
           `;
           if (adminData.length > 0) {
-            adminName = adminData[0].name;
+            adminName = adminData[0].name_admin;
           }
         } catch (err) {
           console.warn("Error obteniendo nombre del admin:", err);
@@ -137,6 +137,8 @@ app.get("/api/votings/:cedula", async (req, res) => {
  * @param {string} votingName - Nombre de la votación
  * @returns {Array} Lista de opciones con todos sus detalles
  */
+
+
 app.get("/api/voting-options/:votingName", async (req, res) => {
   const { votingName } = req.params;
 
@@ -185,6 +187,7 @@ app.get("/api/voting-options/:votingName", async (req, res) => {
  * @param {number} optionId - ID de la opción seleccionada
  * @returns {Object} Confirmación del registro exitoso o error
  */
+
 app.post("/api/vote", async (req, res) => {
   const { cedula, votingName, optionId } = req.body;
 
