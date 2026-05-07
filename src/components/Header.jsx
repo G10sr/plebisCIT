@@ -31,7 +31,7 @@ function Header() {
     const currentPath = location.pathname;
 
     // Rutas donde la navegación no debe ser visible (Durante votación activa)
-    const hideButtonsPaths = ["/menuvoting", "/vote", "/voteConfirm"];
+    const hideButtonsPaths = ["/vote", "/voteConfirm"];
     const shouldHide = hideButtonsPaths.includes(currentPath);
 
     // Detectar página actual
@@ -44,18 +44,24 @@ function Header() {
      * @param {string} target - Destino: 'admin', 'home', 'toAdminRoot', 'back'
      */
     const handleNavigation = (target) => {
-        if (target === "admin") {
-            navigate("/admin", { replace: true });
-        } else if (target === "home") {
-            navigate("/", { replace: true });
-        } else if (target === "toAdminRoot") {
-            // Desde subpáginas de admin volver a la raíz
-            navigate("/admin", { replace: true });
-        } else {
-            // Volver a la página anterior
-            navigate(-1, { replace: true });
-        }
-    };
+            if (target === "admin") {
+                navigate("/admin", { replace: true });
+
+            } else if (target === "home") {
+                navigate("/", { replace: true });
+
+            } else if (target === "toAdminRoot") {
+                navigate("/admin", { replace: true });
+
+            } else {
+                // BACK seguro
+                if (window.history.length > 1 && currentPath != "/menuvoting") {
+                    navigate(-1,{ replace: true });
+                } else {
+                    navigate("/", { replace: true });
+                }
+            }
+        };
 
     return (
         <header>

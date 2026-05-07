@@ -65,8 +65,17 @@ function Home() {
                     </div>
                     <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
                     </p>
-                    <button name="startVote" onClick={handleStart}>Iniciar Voto</button>
-                </div>
+                        <button
+                        name="startVote"
+                        onClick={handleStart}
+                        disabled={idUser.trim().length < 9}
+                        style={{
+                            opacity: idUser.length < 9 ? 0.5 : 1,
+                            cursor: idUser.length < 9 ? "not-allowed" : "pointer"
+                        }}
+                        >
+                        Iniciar Voto
+                        </button>                </div>
             </div>
 
         </section>

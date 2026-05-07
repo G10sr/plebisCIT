@@ -20,6 +20,8 @@ import img from '../assets/img/CRvotos.png';
  */
 function Admin() {
     // Estado del modal (actualmente no utilizado)
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [isOpen, setIsOpen] = useState(true);
     
     // Estado del ID de usuario ingresado
@@ -30,9 +32,39 @@ function Admin() {
      * Iniciar sesión de administrador
      * IMPORTANTE: Agregar validación de credenciales en backend
      */
-    const handleStart = () => {
-        navigate("/menuvotingAdmin", { replace: true });
-    };
+    const handleStart = async () => {
+        try {
+            const response = await fetch("http://localhost:3001/api/admin-login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email,
+                password,
+            }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+            alert(data.error);
+            return;
+            }
+
+            // Guardar UUID del admin
+            localStorage.setItem("adminUUID", data.admin.id);
+            localStorage.setItem("adminName", data.admin.name);
+
+            navigate("/menuvotingAdmin", {
+            replace: true,
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert("Error conectando con el servidor");
+        }
+        };
 
     return (
         <section
@@ -59,14 +91,18 @@ function Admin() {
                         <input
                             type="text"
                             name="idAdmin"
-                            placeholder="Ej: example@ex.com (Correo)"
-                        />
+                            placeholder="Ej: example@ex.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            />
                         <p>Contraseña:</p>
                         <input
-                            type="text"
+                            type="password"
                             name="idAdminPass"
                             placeholder="Contraseña"
-                        />
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            />
                     </div>
                     <p>Si no tienes cuenta, contacta soporte.</p>
                     <button name="enterAdmin" onClick={handleStart}>Entrar Modo Administrador</button>

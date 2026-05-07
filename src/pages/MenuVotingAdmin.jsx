@@ -1,32 +1,55 @@
-/**
- * PÁGINA: MENÚ DE VOTACIONES - ADMINISTRADOR
- * 
- * Panel administrativo que muestra:
- * - Lista de votaciones gestionadas por el administrador
- * - Opciones para editar configuración
- * - Opciones para ver resultados de votaciones
- * 
- * Diferencias con MenuVoting (usuario):
- * - Usa VoteListAdmin en lugar de VoteList
- * - VoteListAdmin proporciona botones de administración (editar, ver resultados)
- * - Acceso completo a todas las votaciones (no solo las del usuario)
- */
-
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import "../assets/css/MenuVoting.css"
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "../assets/css/MenuVoting.css";
 import VoteListAdmin from "../components/VoteListAdmin";
 
+/**
+ * PÁGINA: MENÚ DE VOTACIONES - ADMINISTRADOR
+ */
 function MenuVotingAdmin() {
+    const navigate = useNavigate();
+
     return (
         <section>
             <hr />
+
+            {/* Header de acciones del admin */}
+            <div style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: 12,
+                marginRight:"10vw"
+            }}>
+                <button
+                    onClick={() => navigate("/adminsettings/new")}
+                    style={{
+                        background: "transparent",
+                        border: "1px solid #ddd",
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        fontSize: 12.5,
+                        color: "#7a776e",
+                        cursor: "pointer",
+                        transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "#6c5ce7";
+                        e.currentTarget.style.color = "#6c5ce7";
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "#ddd";
+                        e.currentTarget.style.color = "#7a776e";
+                    }}
+                >
+                    + Crear votación
+                </button>
+            </div>
+
             <div className="VotingList">
                 <VoteListAdmin />
             </div>
         </section>
     );
 }
-
 
 export default MenuVotingAdmin;

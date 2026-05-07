@@ -15,8 +15,8 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGear, faChartSimple, faSquarePollHorizontal } from '@fortawesome/free-solid-svg-icons';
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import "../assets/css/VoteList.css";
 
 /**
@@ -25,12 +25,7 @@ import "../assets/css/VoteList.css";
 function VoteObjectAdmin() {
   // NOTA: Datos hardcodeados temporalmente
   // TODO: Obtener del servidor mediante API
-  const [items] = useState([
-    { id: 1, name: "Option A" },
-    { id: 2, name: "Option B" },
-    { id: 3, name: "Option C" },
-    { id: 4, name: "Option D" }
-  ]);
+  const [items, setItems] = useState([]);
   const navigate = useNavigate();
 
   // Dividir items en dos columnas para layout
@@ -38,33 +33,68 @@ function VoteObjectAdmin() {
   const leftColumn = items.slice(0, half);
   const rightColumn = items.slice(half);
 
+
+  useEffect(() => {
+  const fetchVotings = async () => {
+    try {
+        const adminUUID = localStorage.getItem("adminUUID");
+
+        if (!adminUUID) {
+          navigate("/admin");
+          return;
+        }
+
+        const response = await fetch(`/api/admin-votings/${adminUUID}`);
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error(data.error);
+          return;
+        }
+
+        setItems(data);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchVotings();
+  }, []);
+
   return (
+    
     <div className="voteListContainer">
 
       {/* Columna izquierda */}
       <div className="column">
         {leftColumn.map((product) => (
-          <div key={product.id} className="voteObject">
+          <div key={product.Config_ID} className="voteObject">
             <div className="divObj">
-              {product.name}
+
+              {product.Name}
+
               <div className="botonDiv">
-                {/* SETTINGS */}
+
                 <button
                   className="buttonEdit"
-                  onClick={() => navigate(`/adminsettings/${product.id}`)}
-                  title="Configuración"
+                  onClick={() =>
+                    navigate(`/adminsettings/${encodeURIComponent(product.Name)}`)
+                  }
                 >
                   <FontAwesomeIcon icon={faGear} />
                 </button>
 
-                {/* RESULTS */}
                 <button
                   className="buttonResult"
-                  onClick={() => navigate(`/resultsvoting/${product.id}`)}
-                  title="Resultados"
+                  onClick={() =>
+                    navigate(`/resultsvoting/${product.Config_ID}`)
+                  }
                 >
                   <FontAwesomeIcon icon={faSquarePollHorizontal} />
                 </button>
+
               </div>
             </div>
           </div>
@@ -74,27 +104,31 @@ function VoteObjectAdmin() {
       {/* Columna derecha */}
       <div className="column">
         {rightColumn.map((product) => (
-          <div key={product.id} className="voteObject">
+          <div key={product.Config_ID} className="voteObject">
             <div className="divObj">
-              {product.name}
+
+              {product.Name}
+
               <div className="botonDiv">
-                {/* SETTINGS */}
+
                 <button
                   className="buttonEdit"
-                  onClick={() => navigate(`/adminsettings/${product.id}`, { replace: true })}
-                  title="Configuración"
+                  onClick={() =>
+                    navigate(`/adminsettings/${encodeURIComponent(product.Name)}`)
+                  }
                 >
                   <FontAwesomeIcon icon={faGear} />
                 </button>
 
-                {/* RESULTS */}
                 <button
                   className="buttonResult"
-                  onClick={() => navigate(`/resultsvoting/${product.id}`, { replace: true })}
-                  title="Resultados"
+                  onClick={() =>
+                    navigate(`/resultsvoting/${product.Config_ID}`)
+                  }
                 >
                   <FontAwesomeIcon icon={faSquarePollHorizontal} />
                 </button>
+
               </div>
             </div>
           </div>

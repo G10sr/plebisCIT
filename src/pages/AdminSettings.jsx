@@ -15,7 +15,8 @@
  * para mantener una estética coherente en todo el panel administrativo
  */
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 const GLOBAL_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
 
@@ -133,7 +134,7 @@ const textareaStyle = {
 };
 
 /** Input con foco controlado */
-function TextInput({ placeholder, value, onChange }) {
+function TextInput({ placeholder, value, onChange, disabled = false }) {
   const [focused, setFocused] = useState(false);
   return (
     <input
@@ -141,12 +142,15 @@ function TextInput({ placeholder, value, onChange }) {
       placeholder={placeholder}
       value={value}
       onChange={onChange}
+      disabled={disabled}
       style={{
         ...inputStyle,
-        borderColor: focused ? "var(--accent)" : "var(--border)",
-        boxShadow: focused ? "0 0 0 3px var(--accent-light)" : "var(--shadow)",
+        opacity: disabled ? 0.6 : 1,
+        cursor: disabled ? "not-allowed" : "text",
+        borderColor: focused && !disabled ? "var(--accent)" : "var(--border)",
+        boxShadow: focused && !disabled ? "0 0 0 3px var(--accent-light)" : "var(--shadow)",
       }}
-      onFocus={() => setFocused(true)}
+      onFocus={() => !disabled && setFocused(true)}
       onBlur={() => setFocused(false)}
     />
   );
@@ -256,8 +260,15 @@ function OptionCard({ index, option, onChange, onRemove }) {
   const update = (key) => (e) => onChange(index, { ...option, [key]: e.target.value });
   const handleFiles = (e) => {
     const files = Array.from(e.target.files).slice(0, 5);
-    onChange(index, { ...option, imagenes: files });
-    ``
+    const newImages = files.map(f => ({ file: f, preview: URL.createObjectURL(f), isNew: true }));
+    // Limitar a 5 imágenes máximo
+    const combined = [...(option.imagenes || []), ...newImages].slice(0, 5);
+    onChange(index, { ...option, imagenes: combined });
+  };
+
+  const removeImage = (imgIndex) => {
+    const updated = (option.imagenes || []).filter((_, i) => i !== imgIndex);
+    onChange(index, { ...option, imagenes: updated });
   };
 
   return (
@@ -319,21 +330,43 @@ function OptionCard({ index, option, onChange, onRemove }) {
               style={{ display: "none" }}
             />
           </label>
-          <p style={{ fontSize: 12, color: "var(--muted)", textAlign: "right", lineHeight: 1.5, maxWidth: 180 }}>
-            Estas imágenes se mostrarán al momento de votar en un carrusel. Se pueden subir hasta 5 imágenes.
+          <div style={{ fontSize: 12, color: "var(--muted)", textAlign: "right", lineHeight: 1.5, maxWidth: 180 }}>
+            <div>Estas imágenes se mostrarán al momento de votar en un carrusel. Se pueden subir hasta 5 imágenes.</div>
             {option.imagenes?.length > 0 && (
               <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {option.imagenes.map((file, i) => (
-                  <img
-                    key={i}
-                    src={URL.createObjectURL(file)}
-                    alt="preview"
-                    style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }}
-                  />
+                {option.imagenes.map((img, i) => (
+                  <div key={img.preview || img || i} style={{ position: "relative" }}>
+                    <img
+                      src={img.preview || img}
+                      alt="preview"
+                      style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 6 }}
+                    />
+                    <button
+                      onClick={() => removeImage(i)}
+                      style={{
+                        position: "absolute",
+                        top: -5,
+                        right: -5,
+                        background: "#e74c3c",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: 20,
+                        height: 20,
+                        fontSize: 12,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
-          </p>
+          </div>
         </div>
       </div>
       <Field label="Color de la opción">
@@ -380,6 +413,9 @@ const GRUPOS = [
 
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function NuevaVotacion() {
+  const { configId } = useParams();
+  const isNewVoting = !configId || configId === "new";
+  const [loading, setLoading] = useState(!isNewVoting);
   const [csvFiles, setCsvFiles] = useState([]);
   const [nombre, setNombre] = useState("");
   const [inicio, setInicio] = useState("");
@@ -390,7 +426,8 @@ export default function NuevaVotacion() {
   const [options, setOptions] = useState([
     { nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" },
   ]);
-  const [votacionTerminada, setVotacionTerminada] = useState(false);
+  const [nombreOriginal, setNombreOriginal] = useState("");
+  
   const TAG_OPTIONS = [
     "7°",
     "8°",
@@ -402,6 +439,49 @@ export default function NuevaVotacion() {
     "Todos",
     "No definido",
   ];
+
+  // ─── Cargar datos si es edición ───────────────────────────────────────
+  useEffect(() => {
+    if (!isNewVoting && configId) {
+      loadVotingData(configId);
+    }
+  }, [configId, isNewVoting]);
+
+  const loadVotingData = async (votingName) => {
+    try {
+      const res = await fetch(`/api/voting/${votingName}`);
+      if (!res.ok) {
+        console.error("Error cargando votación");
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+      
+      setNombre(data.Name);
+      setNombreOriginal(data.Name);
+      setInicio(data.Start_time || "");
+      setFinal(data.End_time || "");
+      setOculto(data.Oculto || false);
+      setVigente(data.Vigente || true);
+      
+      if (data.options && data.options.length > 0) {
+        setOptions(data.options.map(opt => ({
+          nombre: opt.nombre,
+          descripcion: opt.descripcion,
+          imagenes: opt.imagenes || [],
+          color: opt.color,
+          id: opt.id
+        })));
+      }
+      
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error cargando la votación");
+      setLoading(false);
+    }
+  };
 
   const updateOptionColor = (index, color) =>
     setOptions((prev) =>
@@ -424,36 +504,172 @@ export default function NuevaVotacion() {
   const removeOption = (index) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
 
-  const handleSubmit = () => {
-    const formData = new FormData();
+  const handleSubmit = async () => {
+    try {
+      // Validar campos obligatorios
+      if (!nombre.trim()) {
+        alert("El nombre de la votación es obligatorio");
+        return;
+      }
 
-    formData.append("nombre", nombre);
-    formData.append("inicio", inicio);
-    formData.append("final", final);
-    formData.append("oculto", oculto);
-    formData.append("vigente", vigente);
-    formData.append("grupos", JSON.stringify(grupos));
+      if (!inicio || !final) {
+        alert("Las fechas de inicio y fin son obligatorias");
+        return;
+      }
 
-    if (csvFile) {
-      formData.append("csv", csvFile);
-    }
+      if (options.some(opt => !opt.nombre.trim() || !opt.descripcion.trim())) {
+        alert("Todas las opciones deben tener nombre y descripción");
+        return;
+      }
 
-    options.forEach((opt, i) => {
-      formData.append(`options[${i}][nombre]`, opt.nombre);
-      formData.append(`options[${i}][descripcion]`, opt.descripcion);
+      // Preparar opciones con imágenes comprimidas
+      const optionsToSend = await Promise.all(options.map(async (opt) => {
+        const imagenes = await Promise.all((opt.imagenes || []).map(async (img) => {
+          // Si es un string (URL), devolverlo tal cual
+          if (typeof img === 'string') return img;
+          // Si es un objeto con preview (archivo nuevo)
+          if (img.preview && img.file) {
+            return new Promise((resolve) => {
+              compressImage(img.file, (compressedBase64) => {
+                resolve(compressedBase64);
+              });
+            });
+          }
+          return null;
+        }));
 
-      opt.imagenes?.forEach((img) => {
-        formData.append(`options[${i}][imagenes]`, img);
+        return {
+          nombre: opt.nombre,
+          descripcion: opt.descripcion,
+          color: opt.color,
+          imagenes: imagenes.filter(Boolean)
+        };
+      }));
+
+      const payload = {
+        nombre,
+        inicio,
+        final,
+        oculto,
+        vigente,
+        grupos,
+        options: optionsToSend,
+        adminUUID: localStorage.getItem("adminUUID")
+      };
+
+      console.log("=== ENVIANDO VOTACIÓN ===");
+      console.log("Payload:", JSON.stringify(payload, null, 2));
+      console.log(`Opciones a enviar: ${optionsToSend.length}`);
+      optionsToSend.forEach((opt, i) => {
+        console.log(`Opción ${i}: ${opt.nombre} - ${opt.descripcion}`);
       });
-    });
 
-    console.log("FORMDATA:");
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
+      const url = isNewVoting
+        ? "/api/voting/create"
+        : `/api/voting/update/${nombreOriginal}`;
+
+      const res = await fetch(url, {
+        method: isNewVoting ? "POST" : "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data);
+        alert("Error: " + (data.error || "No se pudo guardar la votación"));
+        return;
+      }
+
+      alert(isNewVoting ? "✓ Votación creada exitosamente" : "✓ Votación actualizada exitosamente");
+      
+      if (isNewVoting) {
+        // Limpiar formulario
+        setNombre("");
+        setInicio("");
+        setFinal("");
+        setNombreOriginal("");
+        setOptions([{ nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" }]);
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Error inesperado: " + err.message);
     }
-
-    alert("Listo (ver consola)");
   };
+
+  // ─── Función para comprimir imágenes ──────────────────────────────────
+  const compressImage = (file, callback) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Redimensionar si la imagen es muy grande
+        const MAX_SIZE = 800;
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Comprimir a JPEG con calidad 0.7
+        canvas.toBlob((blob) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(blob);
+          reader.onloadend = () => {
+            callback(reader.result);
+          };
+        }, 'image/jpeg', 0.7);
+      };
+    };
+  };
+
+  const handleDeleteVoting = async () => {
+    const confirmar = window.confirm(`¿Seguro que deseas ELIMINAR la votación "${nombreOriginal}"? Esta acción NO se puede deshacer y eliminará todas las tablas relacionadas.`);
+    if (!confirmar) return;
+
+    try {
+      const res = await fetch(`/api/voting/${nombreOriginal}`, {
+        method: "DELETE"
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Error: " + (data.error || "No se pudo eliminar la votación"));
+        return;
+      }
+
+      alert("✓ Votación eliminada completamente");
+      // Redirigir a admin
+      window.location.href = "/admin";
+    } catch (err) {
+      console.error(err);
+      alert("Error inesperado al eliminar: " + err.message);
+    }
+  };
+
 
   return (
     <>
@@ -461,14 +677,35 @@ export default function NuevaVotacion() {
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px 80px" }}>
 
+        {/* Mostrar loader mientras carga */}
+        {loading && (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <p style={{ color: "var(--muted)", fontSize: 14 }}>Cargando votación...</p>
+          </div>
+        )}
+
+        {!loading && (
+          <>
         {/* Título */}
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 600, paddingBottom: 20, borderBottom: "1.5px solid var(--border)", marginBottom: 36, letterSpacing: "-0.3px" }}>
-          Nueva Votación
+          {isNewVoting ? "Nueva Votación" : `Editar: ${nombreOriginal}`}
         </h1>
 
         {/* Nombre de la votación */}
-        <Field label="Nombre de la votación">
-          <TextInput placeholder="...." value={nombre} onChange={(e) => setNombre(e.target.value)} />
+        <Field label="Nombre de la votación" required>
+          <TextInput 
+            placeholder="...." 
+            value={nombre} 
+            onChange={(e) => {
+              if (isNewVoting) setNombre(e.target.value);
+            }}
+            disabled={!isNewVoting}
+          />
+          {!isNewVoting && (
+            <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 6 }}>
+              * El nombre no se puede cambiar en votaciones existentes
+            </p>
+          )}
         </Field>
 
         {/* Fechas */}
@@ -494,11 +731,11 @@ export default function NuevaVotacion() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 40px", marginBottom: 16 }}>
             {GRUPOS.map(([izq, der]) => (
-              <>
+              <React.Fragment key={`${izq}-${der}`}>
                 {izq && <CustomCheckbox key={izq} label={izq} checked={!!grupos[izq]} onChange={() => toggleGrupo(izq)} />}
                 {der && <CustomCheckbox key={der} label={der} checked={!!grupos[der]} onChange={() => toggleGrupo(der)} />}
                 {!der && <div />}
-              </>
+              </React.Fragment>
             ))}
           </div>
 
@@ -635,7 +872,7 @@ export default function NuevaVotacion() {
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Opciones</div>
 
           {options.map((opt, i) => (
-            <OptionCard key={i} index={i} option={opt} onChange={updateOption} onRemove={removeOption} />
+            <OptionCard key={opt.id || i} index={i} option={opt} onChange={updateOption} onRemove={removeOption} />
           ))}
 
           <button
@@ -684,48 +921,44 @@ export default function NuevaVotacion() {
           onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(108,92,231,0.35)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(108,92,231,0.25)"; }}
         >
-          Crear Votación
+          {isNewVoting ? "Crear Votación" : "Guardar Cambios"}
         </button>
-        <button
-          onClick={() => {
-            const confirmar = window.confirm("¿Seguro que quieres terminar la votación?");
-            if (confirmar) {
-              setVotacionTerminada(true);
 
-              // opcional: aquí podrías mandar a backend
-              console.log("Votación terminada");
-
-              alert("Votación finalizada");
-            }
-          }}
-          style={{
-            display: "block",
-            marginLeft: "auto",
-            marginTop: 12,
-            padding: "12px 36px",
-            border: "1.5px solid #e74c3c",
-            borderRadius: 99,
-            background: "transparent",
-            color: "#e74c3c",
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 14.5,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "transform 0.15s, background 0.2s, color 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#e74c3c";
-            e.currentTarget.style.color = "#fff";
-            e.currentTarget.style.transform = "translateY(-1px)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "#e74c3c";
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
-        >
-          Terminar votación
-        </button>
+        {/* Botón eliminar - solo para votaciones existentes */}
+        {!isNewVoting && (
+          <button
+            onClick={handleDeleteVoting}
+            style={{
+              display: "block",
+              marginLeft: "auto",
+              marginTop: 12,
+              padding: "12px 36px",
+              border: "1.5px solid #e74c3c",
+              borderRadius: 99,
+              background: "transparent",
+              color: "#e74c3c",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14.5,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "transform 0.15s, background 0.2s, color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#e74c3c";
+              e.currentTarget.style.color = "#fff";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#e74c3c";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
+          >
+            🗑️ Eliminar Votación
+          </button>
+        )}
+          </>
+        )}
       </div>
     </>
   );

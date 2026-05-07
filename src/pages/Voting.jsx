@@ -92,7 +92,7 @@ function Vote() {
                 const transformedPartidos = data
                     .filter(opt => opt.Name !== "Voto Nulo" && opt.Name !== "Not Defined")
                     .map((opt, idx) => ({
-                        id: opt.id || idx,
+                        id: opt.ID,
                         nombre: opt.Name,
                         descripcionCorta: opt.Des || opt.Name,
                         descripcionLarga: opt.Des || opt.Name,
