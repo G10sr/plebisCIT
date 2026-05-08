@@ -550,25 +550,40 @@ export default function NuevaVotacion() {
 
   const parseCsvFile = async (file, defaultGroup = "") => {
     const text = await file.text();
-    const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+
+    const lines = text
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean);
+
     if (!lines.length) return [];
 
-    const [headerLine, ...rows] = lines;
-    const headers = headerLine.split(",").map((header) => header.trim().toLowerCase());
+    const headerLine = lines[0];
 
-    return rows.map((rowLine) => {
-      const values = rowLine.split(",").map((value) => value.trim());
-      const row = headers.reduce((acc, key, index) => {
-        acc[key] = values[index] ?? "";
-        return acc;
-      }, {});
+    // detectar separador real
+    let delimiter = ",";
+    if (headerLine.includes(";")) delimiter = ";";
+    else if (headerLine.includes("\t")) delimiter = "\t";
+
+    const headers = headerLine
+      .split(delimiter)
+      .map(h => h.trim().toLowerCase());
+
+    return lines.slice(1).map(line => {
+      const values = line.split(delimiter).map(v => v.trim());
+
+      const row = {};
+
+      headers.forEach((h, i) => {
+        row[h] = values[i];
+      });
 
       return {
         ced: row.ced || row.cedula || row.id || "",
         nombre: row.nombre || row.name || "",
         grado: row.grado || row.grade || defaultGroup || "",
       };
-    }).filter((row) => row.ced && row.nombre);
+    }).filter(r => r.ced && r.nombre);
   };
 
   const handleSubmit = async () => {
@@ -589,9 +604,12 @@ export default function NuevaVotacion() {
         return;
       }
 
-      const csvPayloads = await Promise.all(csvFiles.map(async (item) => ({
-        rows: await parseCsvFile(item.file, item.tag)
-      })));
+      const csvPayloads = await Promise.all(
+        csvFiles.map(async (item) => ({
+          fileName: item.file.name,
+          rows: await parseCsvFile(item.file, item.tag)
+        }))
+      );
 
       // Preparar opciones con imágenes comprimidas
       const optionsToSend = await Promise.all(options.map(async (opt) => {
@@ -649,20 +667,26 @@ export default function NuevaVotacion() {
         return;
       }
 
-      if (csvPayloads.length > 0) {
-        for (const payload of csvPayloads) {
-          if (!payload.rows.length) continue;
+      if (csvFiles.length > 0) {
+        // Parsear todos los CSV y combinar las filas en un solo array
+        const allCsvRows = [];
+        for (const item of csvFiles) {
+          const rows = await parseCsvFile(item.file, item.tag);
+          allCsvRows.push(...rows); // Concatenar todas las filas
+        }
 
+        if (allCsvRows.length > 0) {
           const csvRes = await fetch(`/api/voting/${nombre}/import-csv`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ data: payload.rows })
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data: allCsvRows })  // ✅ Formato correcto
           });
 
+          const csvData = await csvRes.json();
+
           if (!csvRes.ok) {
-            console.warn("Error importando CSV para votación:", await csvRes.text());
+            console.warn("Error importando CSV:", csvData.error);
+            alert("Error importando CSV: " + (csvData.error || "Desconocido"));
           }
         }
       }

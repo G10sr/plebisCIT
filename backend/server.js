@@ -321,7 +321,8 @@ app.post("/api/voting/create", async (req, res) => {
         nombre TEXT,
         grado TEXT,
         hasvoted BOOLEAN DEFAULT false,
-        option_id UUID
+        option_id UUID,
+        fileID bigint
       )
     `;
 
@@ -524,23 +525,43 @@ if (!votoNulo.length) {
 app.post("/api/voting/:name/import-csv", async (req, res) => {
   try {
     const { name } = req.params;
-    const { data } = req.body;
-
+    const files = req.body.files || [];
+    console.log("BODY COMPLETO:", req.body);
     const table = `Vote_${formatTableName(name)}_Data`;
 
-    for (const row of data) {
-      await sql`
-        INSERT INTO ${sql(table)}
-        (ced,nombre,grado,hasvoted)
-        VALUES
-        (${row.ced},${row.nombre},${row.grado},false)
-        ON CONFLICT (ced) DO NOTHING
-      `;
+    let inserted = 0;
+
+    for (const file of files) {
+      const rows = file.rows || [];
+
+      for (const row of rows) {
+        const ced = (row.ced || row.cedula || row.id || "").toString().trim();
+        const nombre = (row.nombre || row.name || "").toString().trim();
+        const grado = (row.grado || row.grade || "").toString().trim();
+
+        if (!ced || !nombre) continue;
+
+        await sql`
+          INSERT INTO ${sql(table)} (ced, nombre, grado, hasvoted)
+          VALUES (${ced}, ${nombre}, ${grado || null}, false)
+          ON CONFLICT (ced) DO NOTHING
+        `;
+
+        inserted++;
+      }
     }
 
-    res.json({ success: true });
+    res.json({
+      success: true,
+      inserted
+    });
+
   } catch (err) {
-    res.status(500).json({ error: "Error CSV" });
+    console.error("CSV ERROR:", err);
+    res.status(500).json({
+      error: "Error CSV upload",
+      details: err.message
+    });
   }
 });
 
