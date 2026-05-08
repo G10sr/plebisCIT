@@ -413,8 +413,8 @@ const GRUPOS = [
 
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function NuevaVotacion() {
-  const { configId } = useParams();
-  const isNewVoting = !configId || configId === "new";
+  const { id } = useParams();
+const isNewVoting = !id || id === "new";
   const [loading, setLoading] = useState(!isNewVoting);
   const [csvFiles, setCsvFiles] = useState([]);
   const [nombre, setNombre] = useState("");
@@ -442,10 +442,10 @@ export default function NuevaVotacion() {
 
   // ─── Cargar datos si es edición ───────────────────────────────────────
   useEffect(() => {
-    if (!isNewVoting && configId) {
-      loadVotingData(configId);
+    if (!isNewVoting && id) {
+      loadVotingData(id);
     }
-  }, [configId, isNewVoting]);
+  }, [id, isNewVoting]);
 
   const loadVotingData = async (votingName) => {
     try {
@@ -457,13 +457,23 @@ export default function NuevaVotacion() {
       }
 
       const data = await res.json();
+      console.log(data);
       
       setNombre(data.Name);
       setNombreOriginal(data.Name);
-      setInicio(data.Start_time || "");
-      setFinal(data.End_time || "");
-      setOculto(data.Oculto || false);
-      setVigente(data.Vigente || true);
+      setInicio(
+        data.Start_time
+          ? new Date(data.Start_time).toISOString().split("T")[0]
+          : ""
+      );
+
+      setFinal(
+        data.End_time
+          ? new Date(data.End_time).toISOString().split("T")[0]
+          : ""
+      );
+      setOculto(data.Oculto ?? false);
+      setVigente(data.Vigente ?? true);
       
       if (data.options && data.options.length > 0) {
         setOptions(data.options.map(opt => ({
@@ -594,7 +604,7 @@ export default function NuevaVotacion() {
         setNombreOriginal("");
         setOptions([{ nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" }]);
       }
-
+      window.location.href = "/menuvotingAdmin";
     } catch (err) {
       console.error(err);
       alert("Error inesperado: " + err.message);
@@ -662,8 +672,7 @@ export default function NuevaVotacion() {
       }
 
       alert("✓ Votación eliminada completamente");
-      // Redirigir a admin
-      window.location.href = "/admin";
+      window.location.href = "/menuvotingAdmin";
     } catch (err) {
       console.error(err);
       alert("Error inesperado al eliminar: " + err.message);

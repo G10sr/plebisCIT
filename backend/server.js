@@ -380,7 +380,6 @@ app.put("/api/voting/update/:name", async (req, res) => {
     const { name } = req.params;
 
     const {
-      nombre,
       inicio,
       final,
       oculto,
@@ -395,7 +394,6 @@ app.put("/api/voting/update/:name", async (req, res) => {
     await sql`
       UPDATE "Votings_Config"
       SET
-        "Name" = ${nombre},
         "Start_time" = ${inicio},
         "End_time" = ${final},
         "Oculto" = ${oculto},
@@ -478,25 +476,53 @@ app.post("/api/voting/:name/import-csv", async (req, res) => {
 app.delete("/api/voting/:name", async (req, res) => {
   try {
     const { name } = req.params;
+
+    if (!name) {
+      return res.status(400).json({
+        error: "Nombre de votación requerido"
+      });
+    }
+
     const clean = formatTableName(name);
 
     const optionsTable = `Vote_${clean}_Options`;
     const dataTable = `Vote_${clean}_Data`;
 
-    // Eliminar las tablas de datos y opciones
-    await sql`DROP TABLE IF EXISTS "${dataTable}" CASCADE`;
-    await sql`DROP TABLE IF EXISTS "${optionsTable}" CASCADE`;
+    console.log("Eliminando votación:", name);
+    console.log("Tabla data:", dataTable);
+    console.log("Tabla options:", optionsTable);
 
-    // Eliminar la configuración de la votación
+    // Primero eliminar tabla DATA
     await sql`
-      DELETE FROM "Votings_Config"
-      WHERE "Name" = ${name}
+      DROP TABLE IF EXISTS ${sql(dataTable)} CASCADE
     `;
 
-    res.json({ success: true, message: "Votación eliminada" });
+    // Luego OPTIONS
+    await sql`
+      DROP TABLE IF EXISTS ${sql(optionsTable)} CASCADE
+    `;
+
+    // Finalmente eliminar config
+    const deletedConfig = await sql`
+      DELETE FROM "Votings_Config"
+      WHERE "Name" = ${name}
+      RETURNING *
+    `;
+
+    console.log("Config eliminada:", deletedConfig);
+
+    res.json({
+      success: true,
+      message: "Votación eliminada correctamente"
+    });
+
   } catch (err) {
+    console.error("ERROR ELIMINANDO VOTACIÓN:");
     console.error(err);
-    res.status(500).json({ error: "Error eliminando votación" });
+
+    res.status(500).json({
+      error: err.message || "Error eliminando votación"
+    });
   }
 });
 
