@@ -106,6 +106,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
       const optionsTable = `Vote_${formatTableName(name)}_Options`;
 
       let userData;
+      let hasVoted = false;
 
       try {
         userData = await sql`
@@ -113,7 +114,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
           WHERE ced = ${cedula}
         `;
 
-        if (!userData.length) continue;
+        hasVoted = userData[0]?.hasvoted ?? false;
       } catch {
         continue;
       }
@@ -122,7 +123,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
 
       try {
         const opt = await sql`
-          SELECT "Name" FROM ${sql(optionsTable)}
+          SELECT "ID", "Name" FROM ${sql(optionsTable)}
           ORDER BY "ID"
         `;
         options = opt.map(o => ({
@@ -138,7 +139,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
         Name: name,
         options,
         adminName,
-        hasVoted: !!userData[0].hasvoted,
+        hasVoted,
         Start_time: voting.Start_time,
         End_time: voting.End_time,
         Vigente: voting.Vigente
@@ -167,7 +168,13 @@ app.get("/api/voting-options/:name", async (req, res) => {
       ORDER BY "ID"
     `;
 
-    res.json(data);
+    res.json(data.map(opt => ({
+      id: opt.ID,
+      name: opt.Name,
+      description: opt.Des,
+      images: [opt.Img1, opt.Img2, opt.Img3, opt.Img4, opt.Img5].filter(Boolean),
+      color: opt.Color,
+    })));
   } catch (err) {
     res.status(500).json({ error: "Error cargando opciones" });
   }
@@ -239,6 +246,7 @@ function normalizeOption(opt) {
   }).filter(Boolean);
 
   const result = {
+    id: opt?.id ?? null,
     nombre: opt?.nombre ?? "",
     descripcion: opt?.descripcion ?? "",
     color: opt?.color ?? "#6c5ce7",
@@ -284,7 +292,7 @@ app.post("/api/voting/create", async (req, res) => {
     await sql`
       CREATE TABLE IF NOT EXISTS ${sql(optionsTable)} (
         "ID" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        "Name" text,
+        "Name" text UNIQUE,
         "Des" text,
         "Img1" text,
         "Img2" text,
@@ -295,6 +303,18 @@ app.post("/api/voting/create", async (req, res) => {
       )
     `;
 
+    const exists = await sql`
+      SELECT 1
+      FROM pg_constraint
+      WHERE conname = ${optionsTable + "_unique_name"}
+    `;
+
+    if (!exists.length) {
+      await sql.unsafe(`
+        ALTER TABLE "${optionsTable}"
+        ADD CONSTRAINT "${optionsTable}_unique_name" UNIQUE ("Name")
+      `);
+    }
     await sql`
       CREATE TABLE IF NOT EXISTS ${sql(dataTable)} (
         ced TEXT PRIMARY KEY,
@@ -326,31 +346,60 @@ app.post("/api/voting/create", async (req, res) => {
 
     const safeOptions = (options || []).map(normalizeOption);
 
+      for (const opt of safeOptions) {
+  const imgs = opt.imagenes || [];
 
-    for (const opt of safeOptions) {
-      const imgs = opt.imagenes || [];
+  if (opt.id) {
 
-      await sql`
-        INSERT INTO ${sql(optionsTable)}
-        ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
-        VALUES (
-          ${opt.nombre},
-          ${opt.descripcion},
-          ${imgs[0] || null},
-          ${imgs[1] || null},
-          ${imgs[2] || null},
-          ${imgs[3] || null},
-          ${imgs[4] || null},
-          ${opt.color}
-        )
-      `;
-    }
+    await sql`
+      UPDATE ${sql(optionsTable)}
+      SET
+        "Name" = ${opt.nombre},
+        "Des" = ${opt.descripcion},
+        "Img1" = ${imgs[0] || null},
+        "Img2" = ${imgs[1] || null},
+        "Img3" = ${imgs[2] || null},
+        "Img4" = ${imgs[3] || null},
+        "Img5" = ${imgs[4] || null},
+        "Color" = ${opt.color}
+      WHERE "ID" = ${opt.id}
+    `;
+
+  } else {
 
     await sql`
       INSERT INTO ${sql(optionsTable)}
-      ("Name","Des","Color")
-      VALUES ('Voto Nulo','invalid','#808080')
+      ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
+      VALUES (
+        ${opt.nombre},
+        ${opt.descripcion},
+        ${imgs[0] || null},
+        ${imgs[1] || null},
+        ${imgs[2] || null},
+        ${imgs[3] || null},
+        ${imgs[4] || null},
+        ${opt.color}
+      )
     `;
+
+  }
+}
+    
+
+    const votoNulo = await sql`
+  SELECT "ID"
+  FROM ${sql(optionsTable)}
+  WHERE "Name" = 'Voto Nulo'
+`;
+
+    if (!votoNulo.length) {
+      await sql`
+    INSERT INTO ${sql(optionsTable)}
+    ("Name","Des","Color")
+    VALUES ('Voto Nulo','invalid','#808080')
+    ON CONFLICT ("Name") DO NOTHING
+  `;
+    }
 
     res.json({ success: true });
 
@@ -386,42 +435,79 @@ app.put("/api/voting/update/:name", async (req, res) => {
         "Start_time" = ${inicio},
         "End_time" = ${final},
         "Oculto" = ${oculto},
-        "Vigente" = ${vigente}
+        "Vigente" = ${vigente},
+        "usrAdmin" = ${safeValue(adminUUID)}
       WHERE "Name" = ${name}
-    `;
-
-    await sql`
-      DELETE FROM ${sql(optionsTable)}
-      WHERE "Name" NOT IN ('Not Defined')
     `;
 
     const safeOptions = (options || []).map(normalizeOption);
 
-    for (const opt of safeOptions) {
-      const imgs = opt.imagenes || [];
+    const exists = await sql`
+      SELECT 1
+      FROM pg_constraint
+      WHERE conname = ${optionsTable + "_unique_name"}
+    `;
 
-      await sql`
-        INSERT INTO ${sql(optionsTable)}
-        ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
-        VALUES (
-          ${opt.nombre},
-          ${opt.descripcion},
-          ${imgs[0] || null},
-          ${imgs[1] || null},
-          ${imgs[2] || null},
-          ${imgs[3] || null},
-          ${imgs[4] || null},
-          ${opt.color}
-        )
-      `;
+    if (!exists.length) {
+      await sql.unsafe(`
+        ALTER TABLE "${optionsTable}"
+        ADD CONSTRAINT "${optionsTable}_unique_name" UNIQUE ("Name")
+      `);
     }
+    for (const opt of safeOptions) {
+  const imgs = opt.imagenes || [];
 
-    // Re-insertar Voto Nulo después de actualizar opciones
+  if (opt.id) {
+
+    await sql`
+      UPDATE ${sql(optionsTable)}
+      SET
+        "Name" = ${opt.nombre},
+        "Des" = ${opt.descripcion},
+        "Img1" = ${imgs[0] || null},
+        "Img2" = ${imgs[1] || null},
+        "Img3" = ${imgs[2] || null},
+        "Img4" = ${imgs[3] || null},
+        "Img5" = ${imgs[4] || null},
+        "Color" = ${opt.color}
+      WHERE "ID" = ${opt.id}
+    `;
+
+  } else {
+
     await sql`
       INSERT INTO ${sql(optionsTable)}
-      ("Name","Des","Color")
-      VALUES ('Voto Nulo','invalid','#808080')
+      ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
+      VALUES (
+        ${opt.nombre},
+        ${opt.descripcion},
+        ${imgs[0] || null},
+        ${imgs[1] || null},
+        ${imgs[2] || null},
+        ${imgs[3] || null},
+        ${imgs[4] || null},
+        ${opt.color}
+      )
     `;
+
+  }
+}
+
+    // Re-insertar Voto Nulo después de actualizar opciones
+    const votoNulo = await sql`
+  SELECT "ID"
+  FROM ${sql(optionsTable)}
+  WHERE "Name" = 'Voto Nulo'
+`;
+
+if (!votoNulo.length) {
+  await sql`
+    INSERT INTO ${sql(optionsTable)}
+    ("Name","Des","Color")
+    VALUES ('Voto Nulo','invalid','#808080')
+    ON CONFLICT ("Name") DO NOTHING
+  `;
+}
 
     res.json({ success: true });
 
@@ -455,6 +541,52 @@ app.post("/api/voting/:name/import-csv", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Error CSV" });
+  }
+});
+
+app.delete("/api/voting/:name/option/:id", async (req, res) => {
+  try {
+    const { name, id } = req.params;
+
+    const optionsTable = `Vote_${formatTableName(name)}_Options`;
+    const dataTable = `Vote_${formatTableName(name)}_Data`;
+
+    // 1. 🔥 AQUI va el Not Defined (ANTES de todo)
+    let notDefined = await sql`
+      SELECT "ID"
+      FROM ${sql(optionsTable)}
+      WHERE "Name" = 'Not Defined'
+    `;
+
+    if (!notDefined.length) {
+      notDefined = await sql`
+        INSERT INTO ${sql(optionsTable)}
+        ("Name","Des","Color")
+        VALUES ('Not Defined','default','#9e9e9e')
+        RETURNING "ID"
+      `;
+    }
+
+    const fallbackId = notDefined[0].ID;
+
+    // 2. mover votos a Not Defined
+    await sql`
+      UPDATE ${sql(dataTable)}
+      SET option_id = ${fallbackId}, hasvoted = false
+      WHERE option_id = ${id}
+    `;
+
+    // 3. ahora sí borrar opción
+    await sql`
+      DELETE FROM ${sql(optionsTable)}
+      WHERE "ID" = ${id}
+    `;
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error eliminando opción" });
   }
 });
 
@@ -541,11 +673,11 @@ app.get("/api/voting/:name", async (req, res) => {
     res.json({
       ...voting[0],
       options: options.map(opt => ({
-        nombre: opt.Name,
-        descripcion: opt.Des,
-        imagenes: [opt.Img1, opt.Img2, opt.Img3, opt.Img4, opt.Img5].filter(Boolean),
-        color: opt.Color,
-        id: opt.ID
+        id: opt.ID,
+        name: opt.Name,
+        description: opt.Des,
+        images: [opt.Img1, opt.Img2, opt.Img3, opt.Img4, opt.Img5].filter(Boolean),
+        color: opt.Color
       }))
     });
   } catch (err) {
@@ -557,4 +689,4 @@ app.get("/api/voting/:name", async (req, res) => {
 /* ───────────────────────────────────────────── */
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {});
+app.listen(PORT, () => { });

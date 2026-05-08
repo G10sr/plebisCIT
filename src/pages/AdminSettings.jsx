@@ -256,7 +256,7 @@ function Toggle({ checked, onChange }) {
 }
 
 /** Tarjeta de una opción de candidato */
-function OptionCard({ index, option, onChange, onRemove }) {
+function OptionCard({ index, option, onChange, onRemove, nombreOriginal }) {
   const update = (key) => (e) => onChange(index, { ...option, [key]: e.target.value });
   const handleFiles = (e) => {
     const files = Array.from(e.target.files).slice(0, 5);
@@ -264,6 +264,35 @@ function OptionCard({ index, option, onChange, onRemove }) {
     // Limitar a 5 imágenes máximo
     const combined = [...(option.imagenes || []), ...newImages].slice(0, 5);
     onChange(index, { ...option, imagenes: combined });
+  };
+
+  const handleDelete = async () => {
+    if (!option.id) {
+      onRemove(index);
+      return;
+    }
+
+    const confirmDelete = window.confirm("¿Eliminar esta opción?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(
+        `/api/voting/${encodeURIComponent(nombreOriginal)}/option/${option.id}`,
+        { method: "DELETE" }
+      );
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error(data);
+        throw new Error(data.error || "Error eliminando opción");
+      }
+
+      onRemove(index);
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo eliminar la opción");
+    }
   };
 
   const removeImage = (imgIndex) => {
@@ -289,13 +318,19 @@ function OptionCard({ index, option, onChange, onRemove }) {
       {/* Botón eliminar */}
       {index > 0 && (
         <button
-          onClick={() => onRemove(index)}
+          onClick={handleDelete}
           style={{
-            position: "absolute", top: 16, right: 16,
-            background: "none", border: "none", cursor: "pointer",
-            color: "var(--muted)", fontSize: 18, lineHeight: 1,
-            padding: "2px 6px", borderRadius: 6,
-            transition: "color 0.15s",
+            position: "absolute",
+            top: 16,
+            right: 16,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--muted)",
+            fontSize: 18,
+            lineHeight: 1,
+            padding: "2px 6px",
+            borderRadius: 6,
           }}
           title="Eliminar opción"
         >
@@ -414,7 +449,7 @@ const GRUPOS = [
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function NuevaVotacion() {
   const { id } = useParams();
-const isNewVoting = !id || id === "new";
+  const isNewVoting = !id || id === "new";
   const [loading, setLoading] = useState(!isNewVoting);
   const [csvFiles, setCsvFiles] = useState([]);
   const [nombre, setNombre] = useState("");
@@ -427,7 +462,7 @@ const isNewVoting = !id || id === "new";
     { nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" },
   ]);
   const [nombreOriginal, setNombreOriginal] = useState("");
-  
+
   const TAG_OPTIONS = [
     "7°",
     "8°",
@@ -457,7 +492,7 @@ const isNewVoting = !id || id === "new";
       }
 
       const data = await res.json();
-      
+
       setNombre(data.Name);
       setNombreOriginal(data.Name);
       setInicio(
@@ -473,17 +508,17 @@ const isNewVoting = !id || id === "new";
       );
       setOculto(data.Oculto ?? false);
       setVigente(data.Vigente ?? true);
-      
+
       if (data.options && data.options.length > 0) {
         setOptions(data.options.map(opt => ({
-          nombre: opt.nombre,
-          descripcion: opt.descripcion,
-          imagenes: opt.imagenes || [],
-          color: opt.color,
-          id: opt.id
+          nombre: opt.name ?? opt.Name ?? opt.nombre ?? "",
+          descripcion: opt.description ?? opt.Des ?? opt.descripcion ?? "",
+          imagenes: opt.images ?? opt.imagenes ?? [],
+          color: opt.color ?? opt.Color ?? "#6c5ce7",
+          id: opt.id ?? opt.ID ?? null
         })));
       }
-      
+
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -513,6 +548,29 @@ const isNewVoting = !id || id === "new";
   const removeOption = (index) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
 
+  const parseCsvFile = async (file, defaultGroup = "") => {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    if (!lines.length) return [];
+
+    const [headerLine, ...rows] = lines;
+    const headers = headerLine.split(",").map((header) => header.trim().toLowerCase());
+
+    return rows.map((rowLine) => {
+      const values = rowLine.split(",").map((value) => value.trim());
+      const row = headers.reduce((acc, key, index) => {
+        acc[key] = values[index] ?? "";
+        return acc;
+      }, {});
+
+      return {
+        ced: row.ced || row.cedula || row.id || "",
+        nombre: row.nombre || row.name || "",
+        grado: row.grado || row.grade || defaultGroup || "",
+      };
+    }).filter((row) => row.ced && row.nombre);
+  };
+
   const handleSubmit = async () => {
     try {
       // Validar campos obligatorios
@@ -531,6 +589,10 @@ const isNewVoting = !id || id === "new";
         return;
       }
 
+      const csvPayloads = await Promise.all(csvFiles.map(async (item) => ({
+        rows: await parseCsvFile(item.file, item.tag)
+      })));
+
       // Preparar opciones con imágenes comprimidas
       const optionsToSend = await Promise.all(options.map(async (opt) => {
         const imagenes = await Promise.all((opt.imagenes || []).map(async (img) => {
@@ -548,6 +610,7 @@ const isNewVoting = !id || id === "new";
         }));
 
         return {
+          id: opt.id || null,
           nombre: opt.nombre,
           descripcion: opt.descripcion,
           color: opt.color,
@@ -586,8 +649,26 @@ const isNewVoting = !id || id === "new";
         return;
       }
 
+      if (csvPayloads.length > 0) {
+        for (const payload of csvPayloads) {
+          if (!payload.rows.length) continue;
+
+          const csvRes = await fetch(`/api/voting/${nombre}/import-csv`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ data: payload.rows })
+          });
+
+          if (!csvRes.ok) {
+            console.warn("Error importando CSV para votación:", await csvRes.text());
+          }
+        }
+      }
+
       alert(isNewVoting ? "✓ Votación creada exitosamente" : "✓ Votación actualizada exitosamente");
-      
+
       if (isNewVoting) {
         // Limpiar formulario
         setNombre("");
@@ -687,277 +768,284 @@ const isNewVoting = !id || id === "new";
 
         {!loading && (
           <>
-        {/* Título */}
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 600, paddingBottom: 20, borderBottom: "1.5px solid var(--border)", marginBottom: 36, letterSpacing: "-0.3px" }}>
-          {isNewVoting ? "Nueva Votación" : `Editar: ${nombreOriginal}`}
-        </h1>
+            {/* Título */}
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 600, paddingBottom: 20, borderBottom: "1.5px solid var(--border)", marginBottom: 36, letterSpacing: "-0.3px" }}>
+              {isNewVoting ? "Nueva Votación" : `Editar: ${nombreOriginal}`}
+            </h1>
 
-        {/* Nombre de la votación */}
-        <Field label="Nombre de la votación" required>
-          <TextInput 
-            placeholder="...." 
-            value={nombre} 
-            onChange={(e) => {
-              if (isNewVoting) setNombre(e.target.value);
-            }}
-            disabled={!isNewVoting}
-          />
-          {!isNewVoting && (
-            <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 6 }}>
-              * El nombre no se puede cambiar en votaciones existentes
-            </p>
-          )}
-        </Field>
-
-        {/* Fechas */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
-          <div style={{ flex: 1 }}>
-            <Field label="Inicio">
-              <DateInput value={inicio} onChange={(e) => setInicio(e.target.value)} />
-            </Field>
-          </div>
-          <div style={{ flex: 1 }}>
-            <Field label="Final">
-              <DateInput value={final} onChange={(e) => setFinal(e.target.value)} />
-            </Field>
-          </div>
-        </div>
-
-        {/* Personas a votar */}
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>Personas a votar</span>
-            <span style={{ fontSize: 12, color: "var(--muted)" }}>Esto depende de como lleguen los datos*******</span>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 40px", marginBottom: 16 }}>
-            {GRUPOS.map(([izq, der]) => (
-              <React.Fragment key={`${izq}-${der}`}>
-                {izq && <CustomCheckbox key={izq} label={izq} checked={!!grupos[izq]} onChange={() => toggleGrupo(izq)} />}
-                {der && <CustomCheckbox key={der} label={der} checked={!!grupos[der]} onChange={() => toggleGrupo(der)} />}
-                {!der && <div />}
-              </React.Fragment>
-            ))}
-          </div>
-
-          {/* CSV */}
-          {/* CSV */}
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
-            <div style={{ textAlign: "right", maxWidth: 260 }}>
-
-              <label style={btnSecondaryStyle}>
-                Insertar Datos por CSV
-                <input
-                  type="file"
-                  accept=".csv"
-                  multiple
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files);
-                    const newFiles = files.map((f) => ({ file: f, tag: "" }));
-
-                    setCsvFiles((prev) => [...prev, ...newFiles]);
-
-                    // 🔥 reset para permitir volver a seleccionar el mismo archivo
-                    e.target.value = null;
-                  }}
-                  style={{ display: "none" }}
-                />
-              </label>
-
-              {/* Lista de archivos */}
-              {csvFiles.length > 0 && (
-                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
-                  {csvFiles.map((item, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        background: "var(--surface)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 8,
-                        padding: "8px 10px",
-                        boxShadow: "var(--shadow)",
-                        textAlign: "left",
-                        position: "relative",
-                      }}
-                    >
-                      {/* eliminar */}
-                      <button
-                        onClick={() => {
-                          setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
-                        }}
-                        style={{
-                          position: "absolute",
-                          top: 6,
-                          right: 8,
-                          border: "none",
-                          background: "none",
-                          cursor: "pointer",
-                          fontSize: 14,
-                          color: "var(--muted)",
-                        }}
-                      >
-                        ×
-                      </button>
-
-                      {/* nombre archivo */}
-                      <div style={{ fontSize: 12, marginBottom: 6 }}>
-                        {item.file.name}
-                      </div>
-
-                      {/* tag */}
-                      <select
-                        value={item.tag}
-                        onChange={(e) => {
-                          const updated = [...csvFiles];
-                          updated[i].tag = e.target.value;
-                          setCsvFiles(updated);
-                        }}
-                        style={{
-                          width: "100%",
-                          padding: "6px 8px",
-                          borderRadius: 6,
-                          border: "1px solid var(--border)",
-                          fontSize: 12,
-                          outline: "none",
-                          background: "var(--surface)",
-                          color: item.tag ? "var(--text)" : "var(--muted)",
-                        }}
-                      >
-                        <option value="">Seleccionar grupo...</option>
-                        {TAG_OPTIONS.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                </div>
+            {/* Nombre de la votación */}
+            <Field label="Nombre de la votación" required>
+              <TextInput
+                placeholder="...."
+                value={nombre}
+                onChange={(e) => {
+                  if (isNewVoting) setNombre(e.target.value);
+                }}
+                disabled={!isNewVoting}
+              />
+              {!isNewVoting && (
+                <p style={{ fontSize: 11, color: "var(--muted)", marginTop: 6 }}>
+                  * El nombre no se puede cambiar en votaciones existentes
+                </p>
               )}
+            </Field>
 
-              <p style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
-                Importar los datos de las personas<br />
-                legibles para esta votación.<br />
-                (Esto les permitirá acceder y votar<br />
-                cuando las votaciones se publiquen)
-              </p>
-
-            </div>
-          </div>
-        </div>
-
-        <hr style={{ border: "none", borderTop: "1.5px solid var(--border)", margin: "36px 0" }} />
-
-        {/* Visibilidad */}
-        <div style={{ marginBottom: 40 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Visibilidad</div>
-
-          {[
-            { key: "oculto", val: oculto, set: setOculto, title: "Oculto", desc: "No se muestra a nadie que entre a la plataforma, solo tú lo podrás ver y modificar." },
-            { key: "vigente", val: vigente, set: setVigente, title: "Vigente", desc: "A las personas se les mostrará la votación activa si esta vigente, de caso contrario lo podrán ver más no votar." },
-          ].map(({ key, val, set, title, desc }) => (
-            <div key={key} style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}>
-              <Toggle checked={val} onChange={set} />
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{title}</div>
-                <p style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.55, maxWidth: 260 }}>{desc}</p>
+            {/* Fechas */}
+            <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="Inicio">
+                  <DateInput value={inicio} onChange={(e) => setInicio(e.target.value)} />
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="Final">
+                  <DateInput value={final} onChange={(e) => setFinal(e.target.value)} />
+                </Field>
               </div>
             </div>
-          ))}
-        </div>
 
-        <hr style={{ border: "none", borderTop: "1.5px solid var(--border)", margin: "36px 0" }} />
+            {/* Personas a votar */}
+            <div style={{ marginBottom: 40 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <span style={{ fontSize: 15, fontWeight: 600 }}>Personas a votar</span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>Esto depende de como lleguen los datos*******</span>
+              </div>
 
-        {/* Opciones */}
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Opciones</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 40px", marginBottom: 16 }}>
+                {GRUPOS.map(([izq, der]) => (
+                  <React.Fragment key={`${izq}-${der}`}>
+                    {izq && <CustomCheckbox key={izq} label={izq} checked={!!grupos[izq]} onChange={() => toggleGrupo(izq)} />}
+                    {der && <CustomCheckbox key={der} label={der} checked={!!grupos[der]} onChange={() => toggleGrupo(der)} />}
+                    {!der && <div />}
+                  </React.Fragment>
+                ))}
+              </div>
 
-          {options.map((opt, i) => (
-            <OptionCard key={opt.id || i} index={i} option={opt} onChange={updateOption} onRemove={removeOption} />
-          ))}
+              {/* CSV */}
+              {/* CSV */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
+                <div style={{ textAlign: "right", maxWidth: 260 }}>
 
-          <button
-            onClick={addOption}
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "10px 20px",
-              border: "1.5px solid var(--accent)",
-              borderRadius: 99,
-              background: "transparent",
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 13.5, fontWeight: 500,
-              color: "var(--accent)",
-              cursor: "pointer",
-              transition: "background 0.2s, color 0.2s",
-              marginTop: 8,
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--accent)"; e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--accent)"; }}
-          >
-            <svg width={14} height={14} fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Agrega Otra Opción +
-          </button>
-        </div>
+                  <label style={btnSecondaryStyle}>
+                    Insertar Datos por CSV
+                    <input
+                      type="file"
+                      accept=".csv"
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files);
+                        const newFiles = files.map((f) => ({ file: f, tag: "" }));
 
-        {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          style={{
-            display: "block",
-            marginLeft: "auto",
-            marginTop: 32,
-            padding: "12px 36px",
-            border: "none",
-            borderRadius: 99,
-            background: "var(--accent)",
-            color: "#fff",
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 14.5, fontWeight: 600,
-            cursor: "pointer",
-            boxShadow: "0 4px 18px rgba(108,92,231,0.25)",
-            transition: "transform 0.15s, box-shadow 0.15s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(108,92,231,0.35)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(108,92,231,0.25)"; }}
-        >
-          {isNewVoting ? "Crear Votación" : "Guardar Cambios"}
-        </button>
+                        setCsvFiles((prev) => [...prev, ...newFiles]);
 
-        {/* Botón eliminar - solo para votaciones existentes */}
-        {!isNewVoting && (
-          <button
-            onClick={handleDeleteVoting}
-            style={{
-              display: "block",
-              marginLeft: "auto",
-              marginTop: 12,
-              padding: "12px 36px",
-              border: "1.5px solid #e74c3c",
-              borderRadius: 99,
-              background: "transparent",
-              color: "#e74c3c",
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 14.5,
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "transform 0.15s, background 0.2s, color 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#e74c3c";
-              e.currentTarget.style.color = "#fff";
-              e.currentTarget.style.transform = "translateY(-1px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "#e74c3c";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
-            🗑️ Eliminar Votación
-          </button>
-        )}
+                        // 🔥 reset para permitir volver a seleccionar el mismo archivo
+                        e.target.value = null;
+                      }}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+
+                  {/* Lista de archivos */}
+                  {csvFiles.length > 0 && (
+                    <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
+                      {csvFiles.map((item, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            background: "var(--surface)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                            boxShadow: "var(--shadow)",
+                            textAlign: "left",
+                            position: "relative",
+                          }}
+                        >
+                          {/* eliminar */}
+                          <button
+                            onClick={() => {
+                              setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
+                            }}
+                            style={{
+                              position: "absolute",
+                              top: 6,
+                              right: 8,
+                              border: "none",
+                              background: "none",
+                              cursor: "pointer",
+                              fontSize: 14,
+                              color: "var(--muted)",
+                            }}
+                          >
+                            ×
+                          </button>
+
+                          {/* nombre archivo */}
+                          <div style={{ fontSize: 12, marginBottom: 6 }}>
+                            {item.file.name}
+                          </div>
+
+                          {/* tag */}
+                          <select
+                            value={item.tag}
+                            onChange={(e) => {
+                              const updated = [...csvFiles];
+                              updated[i].tag = e.target.value;
+                              setCsvFiles(updated);
+                            }}
+                            style={{
+                              width: "100%",
+                              padding: "6px 8px",
+                              borderRadius: 6,
+                              border: "1px solid var(--border)",
+                              fontSize: 12,
+                              outline: "none",
+                              background: "var(--surface)",
+                              color: item.tag ? "var(--text)" : "var(--muted)",
+                            }}
+                          >
+                            <option value="">Seleccionar grupo...</option>
+                            {TAG_OPTIONS.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
+                    Importar los datos de las personas<br />
+                    legibles para esta votación.<br />
+                    (Esto les permitirá acceder y votar<br />
+                    cuando las votaciones se publiquen)
+                  </p>
+
+                </div>
+              </div>
+            </div>
+
+            <hr style={{ border: "none", borderTop: "1.5px solid var(--border)", margin: "36px 0" }} />
+
+            {/* Visibilidad */}
+            <div style={{ marginBottom: 40 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Visibilidad</div>
+
+              {[
+                { key: "oculto", val: oculto, set: setOculto, title: "Oculto", desc: "No se muestra a nadie que entre a la plataforma, solo tú lo podrás ver y modificar." },
+                { key: "vigente", val: vigente, set: setVigente, title: "Vigente", desc: "A las personas se les mostrará la votación activa si esta vigente, de caso contrario lo podrán ver más no votar." },
+              ].map(({ key, val, set, title, desc }) => (
+                <div key={key} style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}>
+                  <Toggle checked={val} onChange={set} />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{title}</div>
+                    <p style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.55, maxWidth: 260 }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr style={{ border: "none", borderTop: "1.5px solid var(--border)", margin: "36px 0" }} />
+
+            {/* Opciones */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Opciones</div>
+
+              {options.map((opt, i) => (
+                <OptionCard
+                  key={opt.id || i}
+                  index={i}
+                  option={opt}
+                  onChange={updateOption}
+                  onRemove={removeOption}
+                  nombreOriginal={nombreOriginal}
+                />
+              ))}
+
+              <button
+                onClick={addOption}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "10px 20px",
+                  border: "1.5px solid var(--accent)",
+                  borderRadius: 99,
+                  background: "transparent",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 13.5, fontWeight: 500,
+                  color: "var(--accent)",
+                  cursor: "pointer",
+                  transition: "background 0.2s, color 0.2s",
+                  marginTop: 8,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--accent)"; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--accent)"; }}
+              >
+                <svg width={14} height={14} fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Agrega Otra Opción +
+              </button>
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handleSubmit}
+              style={{
+                display: "block",
+                marginLeft: "auto",
+                marginTop: 32,
+                padding: "12px 36px",
+                border: "none",
+                borderRadius: 99,
+                background: "var(--accent)",
+                color: "#fff",
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 14.5, fontWeight: 600,
+                cursor: "pointer",
+                boxShadow: "0 4px 18px rgba(108,92,231,0.25)",
+                transition: "transform 0.15s, box-shadow 0.15s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(108,92,231,0.35)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(108,92,231,0.25)"; }}
+            >
+              {isNewVoting ? "Crear Votación" : "Guardar Cambios"}
+            </button>
+
+            {/* Botón eliminar - solo para votaciones existentes */}
+            {!isNewVoting && (
+              <button
+                onClick={handleDeleteVoting}
+                style={{
+                  display: "block",
+                  marginLeft: "auto",
+                  marginTop: 12,
+                  padding: "12px 36px",
+                  border: "1.5px solid #e74c3c",
+                  borderRadius: 99,
+                  background: "transparent",
+                  color: "#e74c3c",
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 14.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  transition: "transform 0.15s, background 0.2s, color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#e74c3c";
+                  e.currentTarget.style.color = "#fff";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "#e74c3c";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                🗑️ Eliminar Votación
+              </button>
+            )}
           </>
         )}
       </div>

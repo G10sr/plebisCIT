@@ -83,21 +83,21 @@ function Vote() {
                 const data = await res.json();
 
                 // Buscar el ID real del voto nulo en la base de datos
-                const votoNulo = data.find(opt => opt.Name === "Voto Nulo");
+                const votoNulo = data.find(opt => opt.name === "Voto Nulo");
                 if (votoNulo) {
                     setVotoNuloId(votoNulo.id);
                 }
 
                 // Filtrar opciones del sistema y transformar al formato esperado
                 const transformedPartidos = data
-                    .filter(opt => opt.Name !== "Voto Nulo" && opt.Name !== "Not Defined")
+                    .filter(opt => opt.name !== "Voto Nulo" && opt.name !== "Not Defined")
                     .map((opt, idx) => ({
-                        id: opt.ID,
-                        nombre: opt.Name,
-                        descripcionCorta: opt.Des || opt.Name,
-                        descripcionLarga: opt.Des || opt.Name,
-                        imagenes: [opt.Img1, opt.Img2, opt.Img3, opt.Img4, opt.Img5].filter(Boolean),
-                        color: opt.Color || "#9ecbff",
+                        id: opt.id,
+                        nombre: opt.name,
+                        descripcionCorta: opt.description || opt.name,
+                        descripcionLarga: opt.description || opt.name,
+                        imagenes: opt.images || [],
+                        color: opt.color || "#9ecbff",
                     }));
 
                 // Agregar opción visual del voto nulo al final
