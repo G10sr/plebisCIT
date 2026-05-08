@@ -36,8 +36,17 @@
 
 
 #idSpace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
   text-align: left;
   /* texto alineado a la izquierda */
+}
+
+#idSpace > p, #idSpace > input {
+  width: 300px;
+  text-align: left;
 }
 
 .fondo-container button {

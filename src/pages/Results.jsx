@@ -11,7 +11,18 @@
  * - Requiere: Mostrar estadísticas de participación
  */
 
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 function Results() {
+   const navigate = useNavigate();
+
+   useEffect(() => {
+      if (!localStorage.getItem("adminUUID")) {
+         navigate("/admin", { replace: true });
+      }
+   }, [navigate]);
+
    return (
       <section>
 

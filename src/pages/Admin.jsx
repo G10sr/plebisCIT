@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../assets/css/Admin.css";
 import img from '../assets/img/CRvotos.png';
 
@@ -28,11 +28,17 @@ function Admin() {
     const [idUser, setIdUser] = useState("");
     const navigate = useNavigate();
 
+    useEffect(() => {
+        localStorage.removeItem("adminUUID");
+        localStorage.removeItem("adminName");
+    }, []);
+
     /**
      * Iniciar sesión de administrador
      * IMPORTANTE: Agregar validación de credenciales en backend
      */
-    const handleStart = async () => {
+    const handleStart = async (e) => {
+        e.preventDefault();
         try {
             const response = await fetch("http://localhost:3001/api/admin-login", {
             method: "POST",
@@ -86,26 +92,28 @@ function Admin() {
                         <span style={{ color: "#b9b9b9" }}>rat</span>
                         <span style={{ color: "#3658FA" }}>ivo</span>
                     </h2>
-                    <div id="idSpace">
-                        <p>Ingresa el correo:</p>
-                        <input
-                            type="text"
-                            name="idAdmin"
-                            placeholder="Ej: example@ex.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                    <form onSubmit={handleStart} style={{ width: "100%" }}>
+                        <div id="idSpace">
+                            <p>Ingresa el correo:</p>
+                            <input
+                                type="text"
+                                name="idAdmin"
+                                placeholder="Ej: example@ex.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
-                        <p>Contraseña:</p>
-                        <input
-                            type="password"
-                            name="idAdminPass"
-                            placeholder="Contraseña"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            <p>Contraseña:</p>
+                            <input
+                                type="password"
+                                name="idAdminPass"
+                                placeholder="Contraseña"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
-                    </div>
-                    <p>Si no tienes cuenta, contacta soporte.</p>
-                    <button name="enterAdmin" onClick={handleStart}>Entrar Modo Administrador</button>
+                        </div>
+                        <p>Si no tienes cuenta, contacta soporte.</p>
+                        <button type="submit" name="enterAdmin">Entrar Modo Administrador</button>
+                    </form>
                 </div>
             </div>
 

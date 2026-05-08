@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 const GLOBAL_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
 
@@ -56,6 +56,9 @@ body {
 .custom-checkbox input[type="checkbox"] {
   display: none;
 }
+opacity: isSubmitting ? 0.6 : 1,
+cursor: isSubmitting ? "not-allowed" : "pointer",
+pointerEvents: isSubmitting ? "none" : "auto",
 .custom-checkbox .checkmark {
   width: 20px;
   height: 20px;
@@ -448,6 +451,9 @@ const GRUPOS = [
 
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function NuevaVotacion() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [adminUUID, setAdminUUID] = useState(null);
+  const navigate = useNavigate();
   const { id } = useParams();
   const isNewVoting = !id || id === "new";
   const [loading, setLoading] = useState(!isNewVoting);
@@ -476,6 +482,15 @@ export default function NuevaVotacion() {
   ];
 
   // ─── Cargar datos si es edición ───────────────────────────────────────
+  useEffect(() => {
+    const storedUuid = localStorage.getItem("adminUUID");
+    if (!storedUuid) {
+      navigate("/admin", { replace: true });
+      return;
+    }
+    setAdminUUID(storedUuid);
+  }, [navigate]);
+
   useEffect(() => {
     if (!isNewVoting && id) {
       loadVotingData(id);
@@ -548,45 +563,54 @@ export default function NuevaVotacion() {
   const removeOption = (index) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
 
-  const parseCsvFile = async (file, defaultGroup = "") => {
-    const text = await file.text();
+  // const parseCsvFile = async (file, defaultGroup = "") => {
+  //   const text = await file.text();
 
-    const lines = text
-      .split(/\r?\n/)
-      .map(l => l.trim())
-      .filter(Boolean);
+  //   const lines = text
+  //     .split(/\r?\n/)
+  //     .map(l => l.trim())
+  //     .filter(Boolean);
 
-    if (!lines.length) return [];
+  //   if (!lines.length) return [];
 
-    const headerLine = lines[0];
+  //   const headerLine = lines[0];
 
-    // detectar separador real
-    let delimiter = ",";
-    if (headerLine.includes(";")) delimiter = ";";
-    else if (headerLine.includes("\t")) delimiter = "\t";
+  //   // detectar separador real
+  //   let delimiter = ",";
+  //   if (headerLine.includes(";")) delimiter = ";";
+  //   else if (headerLine.includes("\t")) delimiter = "\t";
 
-    const headers = headerLine
-      .split(delimiter)
-      .map(h => h.trim().toLowerCase());
+  //   const headers = headerLine
+  //     .split(delimiter)
+  //     .map(h => h.trim().toLowerCase());
 
-    return lines.slice(1).map(line => {
-      const values = line.split(delimiter).map(v => v.trim());
+  //   return lines.slice(1).map(line => {
+  //     const values = line.split(delimiter).map(v => v.trim());
 
-      const row = {};
+  //     const row = {};
 
-      headers.forEach((h, i) => {
-        row[h] = values[i];
-      });
+  //     headers.forEach((h, i) => {
+  //       row[h] = values[i];
+  //     });
 
-      return {
-        ced: row.ced || row.cedula || row.id || "",
-        nombre: row.nombre || row.name || "",
-        grado: row.grado || row.grade || defaultGroup || "",
-      };
-    }).filter(r => r.ced && r.nombre);
-  };
+  //     return {
+  //       ced: row.ced || row.cedula || row.id || "",
+  //       nombre: row.nombre || row.name || "",
+  //       grado: row.grado || row.grade || defaultGroup || "",
+  //     };
+  //   }).filter(r => r.ced && r.nombre);
+  // };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+
+    if (!adminUUID) {
+      alert("Credencial de administrador inválida. Vuelve a iniciar sesión.");
+      navigate("/admin", { replace: true });
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       // Validar campos obligatorios
       if (!nombre.trim()) {
@@ -604,12 +628,12 @@ export default function NuevaVotacion() {
         return;
       }
 
-      const csvPayloads = await Promise.all(
-        csvFiles.map(async (item) => ({
-          fileName: item.file.name,
-          rows: await parseCsvFile(item.file, item.tag)
-        }))
-      );
+      // const csvPayloads = await Promise.all(
+      //   csvFiles.map(async (item) => ({
+      //     fileName: item.file.name,
+      //     rows: await parseCsvFile(item.file, item.tag)
+      //   }))
+      // );
 
       // Preparar opciones con imágenes comprimidas
       const optionsToSend = await Promise.all(options.map(async (opt) => {
@@ -644,7 +668,7 @@ export default function NuevaVotacion() {
         vigente,
         grupos,
         options: optionsToSend,
-        adminUUID: localStorage.getItem("adminUUID")
+        adminUUID: adminUUID
       };
 
       const url = isNewVoting
@@ -669,33 +693,33 @@ export default function NuevaVotacion() {
 
       const nombreParaImportar = nombre;
 
-      if (csvFiles.length > 0) {
-        try {
-          const allCsvRows = [];
-          for (const item of csvFiles) {
-            const rows = await parseCsvFile(item.file, item.tag);
-            allCsvRows.push(...rows);
-          }
+      // if (csvFiles.length > 0) {
+      //   try {
+      //     const allCsvRows = [];
+      //     for (const item of csvFiles) {
+      //       const rows = await parseCsvFile(item.file, item.tag);
+      //       allCsvRows.push(...rows);
+      //     }
 
-          if (allCsvRows.length > 0) {
-            const csvRes = await fetch(`/api/voting/${encodeURIComponent(nombreParaImportar)}/import-csv`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ data: allCsvRows })
-            });
+      //     if (allCsvRows.length > 0) {
+      //       const csvRes = await fetch(`/api/voting/${encodeURIComponent(nombreParaImportar)}/import-csv`, {
+      //         method: "POST",
+      //         headers: { "Content-Type": "application/json" },
+      //         body: JSON.stringify({ data: allCsvRows })
+      //       });
 
-            if (!csvRes.ok) {
-              const errorData = await csvRes.json();
-              throw new Error(errorData.error || "Error al subir el contenido del CSV");
-            }
-          }
-        } catch (csvErr) {
-          alert("Votación creada, pero: " + csvErr.message);
-          return; // Detenemos para que el usuario sepa que algo falló
-        }
-      }
+      //       if (!csvRes.ok) {
+      //         const errorData = await csvRes.json();
+      //         throw new Error(errorData.error || "Error al subir el contenido del CSV");
+      //       }
+      //     }
+      //   } catch (csvErr) {
+      //     alert("Votación creada, pero: " + csvErr.message);
+      //     return; // Detenemos para que el usuario sepa que algo falló
+      //   }
+      // }
 
-      alert("✓ Todo se guardó correctamente");
+      // alert("✓ Todo se guardó correctamente");
 
       alert(isNewVoting ? "✓ Votación creada exitosamente" : "✓ Votación actualizada exitosamente");
 
@@ -708,6 +732,8 @@ export default function NuevaVotacion() {
         setOptions([{ nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" }]);
       }
       window.location.href = "/menuvotingAdmin";
+      setIsSubmitting(false);
+
     } catch (err) {
       console.error(err);
       alert("Error inesperado: " + err.message);
@@ -759,9 +785,12 @@ export default function NuevaVotacion() {
   };
 
   const handleDeleteVoting = async () => {
+    if (isSubmitting) return;
+
     const confirmar = window.confirm(`¿Seguro que deseas ELIMINAR la votación "${nombreOriginal}"? Esta acción NO se puede deshacer y eliminará todas las tablas relacionadas.`);
     if (!confirmar) return;
 
+    setIsSubmitting(true);
     try {
       const res = await fetch(`/api/voting/${nombreOriginal}`, {
         method: "DELETE"
@@ -838,7 +867,7 @@ export default function NuevaVotacion() {
             <div style={{ marginBottom: 40 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <span style={{ fontSize: 15, fontWeight: 600 }}>Personas a votar</span>
-                <span style={{ fontSize: 12, color: "var(--muted)" }}>Esto depende de como lleguen los datos*******</span>
+                <span style={{ fontSize: 12, color: "var(--botonesHover)" }}>ESTA AREA ESTARA DISPONIBLE PROXIMAMENETE</span>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 40px", marginBottom: 16 }}>
@@ -866,7 +895,7 @@ export default function NuevaVotacion() {
                         const files = Array.from(e.target.files);
                         const newFiles = files.map((f) => ({ file: f, tag: "" }));
 
-                        setCsvFiles((prev) => [...prev, ...newFiles]);
+                        // setCsvFiles((prev) => [...prev, ...newFiles]);
 
                         // 🔥 reset para permitir volver a seleccionar el mismo archivo
                         e.target.value = null;
@@ -894,7 +923,7 @@ export default function NuevaVotacion() {
                           {/* eliminar */}
                           <button
                             onClick={() => {
-                              setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
+                              // setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
                             }}
                             style={{
                               position: "absolute",
@@ -919,9 +948,9 @@ export default function NuevaVotacion() {
                           <select
                             value={item.tag}
                             onChange={(e) => {
-                              const updated = [...csvFiles];
-                              updated[i].tag = e.target.value;
-                              setCsvFiles(updated);
+                              // const updated = [...csvFiles];
+                              // updated[i].tag = e.target.value;
+                              // setCsvFiles(updated);
                             }}
                             style={{
                               width: "100%",
@@ -1022,6 +1051,7 @@ export default function NuevaVotacion() {
             {/* Submit */}
             <button
               onClick={handleSubmit}
+              disabled={isSubmitting}
               style={{
                 display: "block",
                 marginLeft: "auto",
@@ -1047,6 +1077,7 @@ export default function NuevaVotacion() {
             {!isNewVoting && (
               <button
                 onClick={handleDeleteVoting}
+                disabled={isSubmitting}
                 style={{
                   display: "block",
                   marginLeft: "auto",

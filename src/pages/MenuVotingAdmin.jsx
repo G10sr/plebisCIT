@@ -11,13 +11,19 @@ function MenuVotingAdmin() {
     const [isLoading, setIsLoading] = React.useState(true); // si lo necesitas
 
     React.useEffect(() => {
+        const adminUUID = localStorage.getItem("adminUUID");
+        if (!adminUUID) {
+            navigate("/admin", { replace: true });
+            return;
+        }
+
         // simula carga o inicialización
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 300); // puedes bajarlo o quitarlo
 
         return () => clearTimeout(timer);
-    }, []);
+    }, [navigate]);
 
     if (isLoading) {
         return (

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import img from '../assets/img/CRvotos.png';
 import "../assets/css/Home.css"
 
@@ -20,11 +20,17 @@ function Home() {
     const [idUser, setIdUser] = useState("");
     const navigate = useNavigate();
 
+    useEffect(() => {
+        localStorage.removeItem("adminUUID");
+        localStorage.removeItem("adminName");
+    }, []);
+
     /**
      * Iniciar flujo de votación
      * Valida que haya cédula y navega a la lista de votaciones
      */
-    const handleStart = () => {
+    const handleStart = (e) => {
+        e.preventDefault();
         if (!idUser) {
             alert("Por favor ingresa tu cédula");
             return;
@@ -52,30 +58,33 @@ function Home() {
                         <span style={{ color: "#b9b9b9" }}>sC</span>
                         <span style={{ color: "#3658FA" }}>IT</span>!
                     </h2>
-                    <div id="idSpace">
-                        <p>Ingresa tu identificación:</p>
-                        <input
-                            type="text"
-                            name="idUser"
-                            placeholder="Ej: #-####-#### (Número de cédula)"
-                            maxLength={12}
-                            value={idUser}
-                            onChange={(e) => setIdUser(e.target.value)}
-                        />
-                    </div>
-                    <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
-                    </p>
+                    <form onSubmit={handleStart} style={{ width: "100%" }}>
+                        <div id="idSpace">
+                            <p>Ingresa tu identificación:</p>
+                            <input
+                                type="text"
+                                name="idUser"
+                                placeholder="Ej: #-####-#### (Número de cédula)"
+                                maxLength={12}
+                                value={idUser}
+                                onChange={(e) => setIdUser(e.target.value)}
+                            />
+                        </div>
+                        <p>Recuerda votar por tu cuenta.<br></br>¡Tu desición SÍ importa!
+                        </p>
                         <button
-                        name="startVote"
-                        onClick={handleStart}
-                        disabled={idUser.trim().length < 9}
-                        style={{
-                            opacity: idUser.length < 9 ? 0.5 : 1,
-                            cursor: idUser.length < 9 ? "not-allowed" : "pointer"
-                        }}
+                            type="submit"
+                            name="startVote"
+                            disabled={idUser.trim().length < 9}
+                            style={{
+                                opacity: idUser.length < 9 ? 0.5 : 1,
+                                cursor: idUser.length < 9 ? "not-allowed" : "pointer"
+                            }}
                         >
-                        Iniciar Voto
-                        </button>                </div>
+                            Iniciar Voto
+                        </button>
+                    </form>
+                </div>
             </div>
 
         </section>
