@@ -667,29 +667,35 @@ export default function NuevaVotacion() {
         return;
       }
 
+      const nombreParaImportar = nombre;
+
       if (csvFiles.length > 0) {
-        // Parsear todos los CSV y combinar las filas en un solo array
-        const allCsvRows = [];
-        for (const item of csvFiles) {
-          const rows = await parseCsvFile(item.file, item.tag);
-          allCsvRows.push(...rows); // Concatenar todas las filas
-        }
-
-        if (allCsvRows.length > 0) {
-          const csvRes = await fetch(`/api/voting/${nombre}/import-csv`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data: allCsvRows })  // ✅ Formato correcto
-          });
-
-          const csvData = await csvRes.json();
-
-          if (!csvRes.ok) {
-            console.warn("Error importando CSV:", csvData.error);
-            alert("Error importando CSV: " + (csvData.error || "Desconocido"));
+        try {
+          const allCsvRows = [];
+          for (const item of csvFiles) {
+            const rows = await parseCsvFile(item.file, item.tag);
+            allCsvRows.push(...rows);
           }
+
+          if (allCsvRows.length > 0) {
+            const csvRes = await fetch(`/api/voting/${encodeURIComponent(nombreParaImportar)}/import-csv`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ data: allCsvRows })
+            });
+
+            if (!csvRes.ok) {
+              const errorData = await csvRes.json();
+              throw new Error(errorData.error || "Error al subir el contenido del CSV");
+            }
+          }
+        } catch (csvErr) {
+          alert("Votación creada, pero: " + csvErr.message);
+          return; // Detenemos para que el usuario sepa que algo falló
         }
       }
+
+      alert("✓ Todo se guardó correctamente");
 
       alert(isNewVoting ? "✓ Votación creada exitosamente" : "✓ Votación actualizada exitosamente");
 

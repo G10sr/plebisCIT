@@ -525,43 +525,33 @@ if (!votoNulo.length) {
 app.post("/api/voting/:name/import-csv", async (req, res) => {
   try {
     const { name } = req.params;
-    const files = req.body.files || [];
-    console.log("BODY COMPLETO:", req.body);
-    const table = `Vote_${formatTableName(name)}_Data`;
+    // Cambiamos 'files' por 'data', que es lo que envías desde el front
+    const rows = req.body.data || []; 
+    console.log("Filas recibidas:", rows.length);
 
+    const table = `Vote_${formatTableName(name)}_Data`;
     let inserted = 0;
 
-    for (const file of files) {
-      const rows = file.rows || [];
+    // Ya no necesitas el doble bucle, solo uno para las filas
+    for (const row of rows) {
+      const ced = (row.ced || row.cedula || row.id || "").toString().trim();
+      const nombre = (row.nombre || row.name || "").toString().trim();
+      const grado = (row.grado || row.grade || "").toString().trim();
 
-      for (const row of rows) {
-        const ced = (row.ced || row.cedula || row.id || "").toString().trim();
-        const nombre = (row.nombre || row.name || "").toString().trim();
-        const grado = (row.grado || row.grade || "").toString().trim();
+      if (!ced || !nombre) continue;
 
-        if (!ced || !nombre) continue;
-
-        await sql`
-          INSERT INTO ${sql(table)} (ced, nombre, grado, hasvoted)
-          VALUES (${ced}, ${nombre}, ${grado || null}, false)
-          ON CONFLICT (ced) DO NOTHING
-        `;
-
-        inserted++;
-      }
+      await sql`
+        INSERT INTO ${sql(table)} (ced, nombre, grado, hasvoted)
+        VALUES (${ced}, ${nombre}, ${grado || null}, false)
+        ON CONFLICT (ced) DO NOTHING
+      `;
+      inserted++;
     }
 
-    res.json({
-      success: true,
-      inserted
-    });
-
+    res.json({ success: true, inserted });
   } catch (err) {
     console.error("CSV ERROR:", err);
-    res.status(500).json({
-      error: "Error CSV upload",
-      details: err.message
-    });
+    res.status(500).json({ error: "Error CSV upload", details: err.message });
   }
 });
 
