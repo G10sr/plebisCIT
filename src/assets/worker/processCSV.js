@@ -26,5 +26,3 @@ const result = dataLines.map(line => {
 });
 
 fs.writeFileSync(outputFile, JSON.stringify(result, null, 2));
-
-console.log(`Listo! ${result.length} registros procesados -> ${outputFile}`);

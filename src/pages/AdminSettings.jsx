@@ -457,7 +457,6 @@ const isNewVoting = !id || id === "new";
       }
 
       const data = await res.json();
-      console.log(data);
       
       setNombre(data.Name);
       setNombreOriginal(data.Name);
@@ -566,13 +565,6 @@ const isNewVoting = !id || id === "new";
         options: optionsToSend,
         adminUUID: localStorage.getItem("adminUUID")
       };
-
-      console.log("=== ENVIANDO VOTACIÓN ===");
-      console.log("Payload:", JSON.stringify(payload, null, 2));
-      console.log(`Opciones a enviar: ${optionsToSend.length}`);
-      optionsToSend.forEach((opt, i) => {
-        console.log(`Opción ${i}: ${opt.nombre} - ${opt.descripcion}`);
-      });
 
       const url = isNewVoting
         ? "/api/voting/create"

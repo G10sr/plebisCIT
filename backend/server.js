@@ -231,7 +231,6 @@ app.post("/api/vote", async (req, res) => {
 ───────────────────────────────────────────── */
 
 function normalizeOption(opt) {
-  console.log("Normalizando opción:", JSON.stringify(opt, null, 2));
 
   const imagenes = (opt?.imagenes || []).map((img) => {
     if (typeof img === "string") return img;
@@ -246,7 +245,6 @@ function normalizeOption(opt) {
     imagenes,
   };
 
-  console.log("Opción normalizada:", JSON.stringify(result, null, 2));
   return result;
 }
 
@@ -256,8 +254,6 @@ function safeValue(value) {
 
 app.post("/api/voting/create", async (req, res) => {
   try {
-    console.log("=== CREAR VOTACIÓN ===");
-    console.log("Payload recibido:", JSON.stringify(req.body, null, 2));
 
     const {
       nombre,
@@ -268,10 +264,6 @@ app.post("/api/voting/create", async (req, res) => {
       options = [],
       adminUUID
     } = req.body;
-
-    console.log(`Nombre: ${nombre}, Inicio: ${inicio}, Final: ${final}`);
-    console.log(`Opciones recibidas: ${options?.length || 0}`);
-    console.log(`AdminUUID: ${adminUUID}`);
 
     if (!nombre || !inicio || !final) {
       return res.status(400).json({ error: "Nombre, inicio y final son obligatorios" });
@@ -334,7 +326,6 @@ app.post("/api/voting/create", async (req, res) => {
 
     const safeOptions = (options || []).map(normalizeOption);
 
-    console.log("Opciones a insertar:", JSON.stringify(safeOptions, null, 2));
 
     for (const opt of safeOptions) {
       const imgs = opt.imagenes || [];
@@ -355,13 +346,11 @@ app.post("/api/voting/create", async (req, res) => {
       `;
     }
 
-    console.log("Insertando Voto Nulo...");
     await sql`
       INSERT INTO ${sql(optionsTable)}
       ("Name","Des","Color")
       VALUES ('Voto Nulo','invalid','#808080')
     `;
-    console.log("Voto Nulo insertado exitosamente");
 
     res.json({ success: true });
 
@@ -488,10 +477,6 @@ app.delete("/api/voting/:name", async (req, res) => {
     const optionsTable = `Vote_${clean}_Options`;
     const dataTable = `Vote_${clean}_Data`;
 
-    console.log("Eliminando votación:", name);
-    console.log("Tabla data:", dataTable);
-    console.log("Tabla options:", optionsTable);
-
     // Primero eliminar tabla DATA
     await sql`
       DROP TABLE IF EXISTS ${sql(dataTable)} CASCADE
@@ -508,8 +493,6 @@ app.delete("/api/voting/:name", async (req, res) => {
       WHERE "Name" = ${name}
       RETURNING *
     `;
-
-    console.log("Config eliminada:", deletedConfig);
 
     res.json({
       success: true,
@@ -574,4 +557,4 @@ app.get("/api/voting/:name", async (req, res) => {
 /* ───────────────────────────────────────────── */
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log("🚀 " + PORT));
+app.listen(PORT, () => {});
