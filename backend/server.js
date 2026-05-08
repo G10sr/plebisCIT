@@ -81,7 +81,27 @@ app.get("/api/votings/:cedula", async (req, res) => {
 
     for (const voting of votingsConfig) {
       const name = voting.Name;
+      const adminUUID =
+        voting.usrAdmin ||
+        voting.usradmin ||
+        null;
+      let adminName = "No disponible";
 
+      if (adminUUID) {
+        try {
+          const adminData = await sql`
+            SELECT "name_admin"
+            FROM "adminAccount"
+            WHERE "ID" = ${adminUUID}
+          `;
+
+          if (adminData.length > 0) {
+            adminName = adminData[0].name_admin;
+          }
+        } catch (err) {
+          console.warn("Error obteniendo admin:", err);
+        }
+      }
       const dataTable = `Vote_${formatTableName(name)}_Data`;
       const optionsTable = `Vote_${formatTableName(name)}_Options`;
 
@@ -117,6 +137,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
         Config_ID: voting.Config_ID,
         Name: name,
         options,
+        adminName,
         hasVoted: !!userData[0].hasvoted,
         Start_time: voting.Start_time,
         End_time: voting.End_time,
