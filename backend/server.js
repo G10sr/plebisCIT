@@ -49,7 +49,7 @@ app.post("/api/admin-login", async (req, res) => {
     if (user.password !== password) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
-
+ 
     res.json({
       success: true,
       admin: {
