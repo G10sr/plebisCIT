@@ -701,3 +701,85 @@ app.get("/api/voting/:name", async (req, res) => {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => { });
+
+/* --------------------------- ESTO LO AÑADÍ (JD) --------------------------- */
+
+/* ─────────────────────────────────────────────
+   RESULTADOS DE VOTACIÓN
+───────────────────────────────────────────── */
+
+app.get("/api/voting-results/:configId", async (req, res) => {
+  try {
+    const { configId } = req.params;
+
+    // 1. Buscar la votación usando Config_ID
+    const votingConfig = await sql`
+      SELECT "Name"
+      FROM "Votings_Config"
+      WHERE "Config_ID" = ${configId}
+    `;
+
+    if (!votingConfig.length) {
+      return res.status(404).json({
+        error: "Votación no encontrada"
+      });
+    }
+
+    const votingName = votingConfig[0].Name;
+
+    // 2. Crear nombres dinámicos de tablas
+    const cleanName = formatTableName(votingName);
+
+    const dataTable = `Vote_${cleanName}_Data`;
+    const optionsTable = `Vote_${cleanName}_Options`;
+
+    // 3. Obtener todos los votos + nombre de opción
+    const results = await sql`
+      SELECT
+        d.ced,
+        d.nombre,
+        d.grado,
+        d.hasvoted,
+        d.option_id,
+
+        o."Name" AS option_name,
+        o."Color" AS option_color
+
+      FROM ${sql(dataTable)} d
+
+      LEFT JOIN ${sql(optionsTable)} o
+      ON d.option_id = o."ID"
+
+      ORDER BY d.nombre ASC
+    `;
+
+    // 4. Formatear respuesta
+    const formatted = results.map(row => ({
+      cedula: row.ced,
+      nombre: row.nombre,
+      grado: row.grado,
+
+      hasVoted: row.hasvoted,
+
+      optionId: row.option_id,
+
+      selectedOption: row.option_name || "Sin opción",
+
+      optionColor: row.option_color || null
+    }));
+
+    res.json({
+      votingName,
+      totalVotes: formatted.filter(v => v.hasVoted).length,
+      totalUsers: formatted.length,
+      results: formatted
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      error: "Error obteniendo resultados"
+    });
+  }
+});
