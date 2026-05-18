@@ -46,7 +46,7 @@ function App() {
 
             <Route path="/menuvotingAdmin" element={<MenuVotingAdmin />} />
             <Route path="/adminsettings/:id" element={<AdminSettings />} />
-            <Route path="/resultsvoting/:id" element={<ResultsVotings />} />
+            <Route path="/resultsvoting/:configId" element={<Results />} />
 
             {/* Redirecciones */}
             <Route path="/home" element={<Navigate to="/" replace />} />
