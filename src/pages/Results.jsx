@@ -12,245 +12,80 @@
  * /results/:configId
  */
 
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 function Results() {
-   const navigate = useNavigate();
-   const { configId } = useParams();
 
-   const [loading, setLoading] = useState(true);
-   const [error, setError] = useState("");
+  const { id } = useParams();
 
-   const [resultsData, setResultsData] = useState(null);
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-   useEffect(() => {
-      if (!localStorage.getItem("adminUUID")) {
-         navigate("/admin", { replace: true });
+  useEffect(() => {
+
+    async function loadCandidates() {
+
+      try {
+
+        // 1. Obtener nombre de votación usando el ID
+        const votingRes = await fetch(
+          `http://localhost:3001/api/voting-config/${id}`
+        );
+
+        const votingData = await votingRes.json();
+
+        // votingData.Name -> "VotacionesRonald"
+
+        // 2. Obtener candidatos
+        const candidatesRes = await fetch(
+          `http://localhost:3001/api/voting-options/${votingData.Name}`
+        );
+
+        const candidatesData = await candidatesRes.json();
+
+        setCandidates(candidatesData);
+
+      } catch (err) {
+
+        console.error(err);
+
+      } finally {
+
+        setLoading(false);
+
       }
-   }, [navigate]);
+    }
 
-   useEffect(() => {
-      async function fetchResults() {
-         try {
-            setLoading(true);
+    loadCandidates();
 
-            const response = await fetch(
-               `http://localhost:3001/api/voting-results/${configId}`
-            );
+  }, [id]);
 
-            const data = await response.json();
+  if (loading) {
+    return <h1>Cargando...</h1>;
+  }
 
-            if (!response.ok) {
-               throw new Error(data.error || "Error cargando resultados");
-            }
+  return (
+    <div>
 
-            setResultsData(data);
+      <h1>Resultados</h1>
 
-         } catch (err) {
-            console.error(err);
-            setError(err.message);
-         } finally {
-            setLoading(false);
-         }
-      }
+      <div className="modal">
 
-      if (configId) {
-         fetchResults();
-      }
+        {candidates.map(candidate => (
 
-   }, [configId]);
+          <div key={candidate.id}>
 
-   /**
-    * CONTAR VOTOS POR OPCIÓN
-    */
-   const voteStats = useMemo(() => {
-      if (!resultsData?.results) return [];
+            <h2>{candidate.name}</h2>
 
-      const stats = {};
+          </div>
 
-      resultsData.results.forEach(voter => {
+        ))}
 
-         if (!voter.hasVoted) return;
+      </div>
 
-         const option = voter.selectedOption || "Sin opción";
-
-         if (!stats[option]) {
-            stats[option] = {
-               name: option,
-               votes: 0,
-               color: voter.optionColor || "#999"
-            };
-         }
-
-         stats[option].votes += 1;
-      });
-
-      return Object.values(stats).sort((a, b) => b.votes - a.votes);
-
-   }, [resultsData]);
-
-   /**
-    * PORCENTAJE DE PARTICIPACIÓN
-    */
-   const participation = useMemo(() => {
-      if (!resultsData) return 0;
-
-      if (resultsData.totalUsers === 0) return 0;
-
-      return (
-         (resultsData.totalVotes / resultsData.totalUsers) * 100
-      ).toFixed(1);
-
-   }, [resultsData]);
-
-   if (loading) {
-      return (
-         <section className="results-page">
-            <h2>Cargando resultados...</h2>
-         </section>
-      );
-   }
-
-   if (error) {
-      return (
-         <section className="results-page">
-            <h2>Error</h2>
-            <p>{error}</p>
-         </section>
-      );
-   }
-
-   return (
-      <section className="results-page">
-
-         <h1>
-            Resultados: {resultsData?.votingName}
-         </h1>
-
-         {/* ─────────────────────────────
-            ESTADÍSTICAS GENERALES
-         ───────────────────────────── */}
-
-         <div className="results-stats">
-
-            <div className="stat-card">
-               <h3>Total usuarios</h3>
-               <p>{resultsData?.totalUsers}</p>
-            </div>
-
-            <div className="stat-card">
-               <h3>Total votos</h3>
-               <p>{resultsData?.totalVotes}</p>
-            </div>
-
-            <div className="stat-card">
-               <h3>Participación</h3>
-               <p>{participation}%</p>
-            </div>
-
-         </div>
-
-         {/* ─────────────────────────────
-            RESULTADOS POR OPCIÓN
-         ───────────────────────────── */}
-
-         <div className="results-options">
-
-            <h2>Resultados</h2>
-
-            {voteStats.length === 0 && (
-               <p>No hay votos registrados.</p>
-            )}
-
-            {voteStats.map(option => {
-
-               const percentage = (
-                  (option.votes / resultsData.totalVotes) * 100
-               ).toFixed(1);
-
-               return (
-                  <div
-                     key={option.name}
-                     className="result-option"
-                  >
-
-                     <div className="result-header">
-                        <h3>{option.name}</h3>
-
-                        <span>
-                           {option.votes} votos ({percentage}%)
-                        </span>
-                     </div>
-
-                     <div className="progress-bar">
-                        <div
-                           className="progress-fill"
-                           style={{
-                              width: `${percentage}%`,
-                              background: option.color
-                           }}
-                        />
-                     </div>
-
-                  </div>
-               );
-            })}
-
-         </div>
-
-         {/* ─────────────────────────────
-            TABLA DE VOTANTES
-         ───────────────────────────── */}
-
-         <div className="results-table">
-
-            <h2>Votantes</h2>
-
-            <table>
-               <thead>
-                  <tr>
-                     <th>Cédula</th>
-                     <th>Nombre</th>
-                     <th>Grado</th>
-                     <th>Votó</th>
-                     <th>Opción</th>
-                  </tr>
-               </thead>
-
-               <tbody>
-
-                  {resultsData?.results.map(voter => (
-                     <tr key={voter.cedula}>
-
-                        <td>{voter.cedula}</td>
-
-                        <td>{voter.nombre}</td>
-
-                        <td>{voter.grado}</td>
-
-                        <td>
-                           {voter.hasVoted
-                              ? "Sí"
-                              : "No"}
-                        </td>
-
-                        <td>
-                           {voter.hasVoted
-                              ? voter.selectedOption
-                              : "-"}
-                        </td>
-
-                     </tr>
-                  ))}
-
-               </tbody>
-            </table>
-
-         </div>
-
-      </section>
-   );
+    </div>
+  );
 }
 
 export default Results;

@@ -702,12 +702,51 @@ app.get("/api/voting/:name", async (req, res) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => { });
 
-/* --------------------------- ESTO LO AÑADÍ (JD) --------------------------- */
+/* --------------------------- ESTO LO AÑADÍ (INTENTO 2) --------------------------- */
+
+/* ─────────────────────────────────────────────
+   OBTENER CONFIG POR ID
+───────────────────────────────────────────── */
+
+app.get("/api/voting-config/:id", async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const result = await sql`
+      SELECT *
+      FROM "Votings_Config"
+      WHERE "Config_ID" = ${id}
+    `;
+
+    if (!result.length) {
+      return res.status(404).json({
+        error: "Votación no encontrada"
+      });
+    }
+
+    res.json(result[0]);
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Error obteniendo configuración"
+    });
+
+  }
+
+});
+
+/* --------------------------- ESTO LO AÑADÍ (OLD) --------------------------- */
 
 /* ─────────────────────────────────────────────
    RESULTADOS DE VOTACIÓN
 ───────────────────────────────────────────── */
 
+/*
 app.get("/api/voting-results/:configId", async (req, res) => {
   try {
     const { configId } = req.params;
@@ -783,3 +822,4 @@ app.get("/api/voting-results/:configId", async (req, res) => {
     });
   }
 });
+*/
