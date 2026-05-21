@@ -806,7 +806,7 @@ app.get("/api/voting-results/:configId", async (req, res) => {
 
         // Cambiar nombre visual
         name: option.Name === "Not Defined"
-          ? "Negligencia"
+          ? "Abstencionismo"
           : option.Name,
 
         description: option.Des,
@@ -815,7 +815,7 @@ app.get("/api/voting-results/:configId", async (req, res) => {
 
         totalVotes: Number(votes[0].total),
 
-        // Saber si es Negligencia
+        // Saber si es Abstencionismo
         isNegligence: option.Name === "Not Defined"
       });
     }

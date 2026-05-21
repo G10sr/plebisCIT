@@ -227,6 +227,51 @@ function CustomCheckbox({ label, checked, onChange }) {
     </label>
   );
 }
+function GlobalLoader({ show, text = "Procesando..." }) {
+  if (!show) return null;
+
+  return (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.35)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+      backdropFilter: "blur(4px)"
+    }}>
+      <div style={{
+        background: "white",
+        padding: "24px 28px",
+        borderRadius: 12,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 12,
+        boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
+      }}>
+        <div className="spinner" />
+        <div style={{ fontSize: 14, color: "#333" }}>{text}</div>
+      </div>
+
+      <style>{`
+        .spinner {
+          width: 34px;
+          height: 34px;
+          border: 3px solid #ddd;
+          border-top: 3px solid #6c5ce7;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 /** Toggle switch */
 function Toggle({ checked, onChange }) {
@@ -737,6 +782,8 @@ export default function NuevaVotacion() {
     } catch (err) {
       console.error(err);
       alert("Error inesperado: " + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -815,6 +862,14 @@ export default function NuevaVotacion() {
   return (
     <>
       <style>{GLOBAL_CSS}</style>
+      <GlobalLoader
+        show={isSubmitting}
+        text={
+          isNewVoting
+            ? "Creando votación..."
+            : "Guardando cambios..."
+        }
+      />
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px 80px" }}>
 
@@ -838,7 +893,14 @@ export default function NuevaVotacion() {
                 placeholder="...."
                 value={nombre}
                 onChange={(e) => {
-                  if (isNewVoting) setNombre(e.target.value);
+                  if (!isNewVoting) return;
+
+                  const value = e.target.value;
+
+                  // Permitir letras, números y espacios
+                  const cleaned = value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚ\s]/g, "");
+
+                  setNombre(cleaned);
                 }}
                 disabled={!isNewVoting}
               />

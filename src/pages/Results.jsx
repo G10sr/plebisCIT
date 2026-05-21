@@ -4,6 +4,28 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import "../assets/css/Results.css"
+
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from "chart.js";
+
+import { Pie, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement
+);
 
 function Results() {
 
@@ -49,22 +71,92 @@ function Results() {
   if (loading) {
     return <h1>Cargando...</h1>;
   }
+  // ORDENAR: voto nulo y abstinencia al final
+  const sortedCandidates = [...candidates].sort((a, b) => {
 
+    const special = ["voto nulo", "abstencionismo"];
+
+    const aSpecial =
+      special.includes(a.name.toLowerCase());
+
+    const bSpecial =
+      special.includes(b.name.toLowerCase());
+
+    // ambos especiales
+    if (aSpecial && bSpecial) return 0;
+
+    // a especial => va después
+    if (aSpecial) return 1;
+
+    // b especial => va después
+    if (bSpecial) return -1;
+
+    return 0;
+  });
+  // DATOS DEL PIE CHART
+  const chartData = {
+    labels: sortedCandidates.map(c => c.name),
+
+    datasets: [
+      {
+        id: 1,
+        label: "Votos",
+        data: sortedCandidates.map(c => c.totalVotes),
+        backgroundColor: sortedCandidates.map(
+          c => c.color || "#8884d8"
+        ),
+        borderColor: "#ffffff",
+        borderWidth: 2,
+      },
+    ],
+  };
+
+  const barData = {
+    labels: sortedCandidates.map(c => c.name),
+
+    datasets: [
+      {
+        label: "Votos",
+        data: sortedCandidates.map(c => c.totalVotes),
+        backgroundColor: sortedCandidates.map(
+          c => c.color || "#8884d8"
+        ),
+        borderColor: "#ffffff",
+        borderWidth: 1,
+      },
+    ],
+  };
+  const barOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+        },
+      },
+    },
+  };
   return (
     <div style={styles.container}>
 
-      <h1>Resultados</h1>
+      <h1 style={{ color: "black" }}>Resultados</h1>
 
       {/* GRID */}
       <div style={styles.grid}>
 
-        {candidates.map(candidate => (
+        {sortedCandidates.map(candidate => (
 
           <div
             key={candidate.id}
             style={{
               ...styles.card,
-              background: candidate.color || "#1e1e1e"
+              backgroundColor: candidate.color || "#1e1e1e"
             }}
             onClick={() => setSelectedCandidate(candidate)}
           >
@@ -119,7 +211,19 @@ function Results() {
         </div>
 
       )}
-
+      <section id="chartsJS">
+        {/* PIE CHART */}
+        <div style={styles.chartContainer}>
+          <Pie data={chartData} />
+        </div>
+        {/* BAR CHART */}
+        <div style={styles.chartContainer}>
+          <Bar data={barData} options={barOptions} />
+        </div>
+      </section>
+      <button style={styles.button} onClick={() => window.print()} className="btn">
+        Crear PDF
+      </button>
     </div>
   );
 }
@@ -130,8 +234,15 @@ const styles = {
     padding: "40px",
     textAlign: "center",
     minHeight: "100vh",
-    background: "#121212",
     color: "white",
+  },
+  chartContainer: {
+    width: "400px",
+    margin: "0 auto 40px auto",
+    background: "white",
+    padding: "20px",
+    borderRadius: "20px",
+    marginTop: "10vh"
   },
 
   grid: {
@@ -198,7 +309,18 @@ const styles = {
     fontWeight: "bold",
     marginTop: "20px",
   },
-
+  button: {
+    background: "var(--C-blue)",
+    border: "none",
+    cursor: "pointer",
+    color: "white",
+    minWidth: "120px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+      borderRadius: "10px",
+    justifyContent: "center",
+}
 };
 
 export default Results;

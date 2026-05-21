@@ -64,3 +64,26 @@
 .results-table th {
    background: #1f1f1f;
 }
+
+#chartsJS {
+   display: flex;
+   flex-direction: row;
+   justify-content: center;
+   align-items: center;
+}
+
+@media print {
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .card {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .btn{
+      visibility: hidden;
+  }
+}
