@@ -106,18 +106,26 @@ app.get("/api/votings/:cedula", async (req, res) => {
       const optionsTable = `Vote_${formatTableName(name)}_Options`;
 
       let userData;
-      let hasVoted = false;
+let hasVoted = false;
 
-      try {
-        userData = await sql`
-          SELECT hasvoted FROM ${sql(dataTable)}
-          WHERE ced = ${cedula}
-        `;
+try {
 
-        hasVoted = userData[0]?.hasvoted ?? false;
-      } catch {
-        continue;
-      }
+  userData = await sql`
+    SELECT hasvoted
+    FROM ${sql(dataTable)}
+    WHERE ced = ${cedula}
+  `;
+
+  // 🔥 si no existe la cédula, saltar esta votación
+  if (!userData.length) {
+    continue;
+  }
+
+  hasVoted = userData[0].hasvoted ?? false;
+
+} catch {
+  continue;
+}
 
       let options = [];
 
