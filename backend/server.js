@@ -114,14 +114,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
           WHERE ced = ${cedula}
         `;
 
-        // ✅ SI EL USUARIO NO ESTÁ EN LA TABLA
-        // NO MOSTRAR ESTA VOTACIÓN
-        if (!userData.length) {
-          continue;
-        }
-
         hasVoted = userData[0]?.hasvoted ?? false;
-
       } catch {
         continue;
       }
@@ -716,10 +709,15 @@ app.listen(PORT, () => { });
 ───────────────────────────────────────────── */
 
 app.get("/api/voting-config/:id", async (req, res) => {
-
   try {
 
     const { id } = req.params;
+
+    if (!id || id === "undefined") {
+      return res.status(400).json({
+        error: "ID inválido"
+      });
+    }
 
     const result = await sql`
       SELECT *
@@ -736,19 +734,14 @@ app.get("/api/voting-config/:id", async (req, res) => {
     res.json(result[0]);
 
   } catch (err) {
-
     console.error(err);
 
     res.status(500).json({
       error: "Error obteniendo configuración"
     });
-
   }
-
 });
-
 /* --------------------------- ESTO LO AÑADÍ (OLD = BASURA BODRIO 🤮) --------------------------- */
-
 
 /* ─────────────────────────────────────────────
    RESULTADOS DE VOTACIÓN

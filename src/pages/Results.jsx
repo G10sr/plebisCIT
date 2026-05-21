@@ -68,21 +68,22 @@ function Results() {
       {/* LISTA DE CANDIDATOS */}
       <div style={styles.grid}>
 
-        {candidates.map(candidate => (
+  {Array.isArray(candidates) &&
+    candidates.map(candidate => (
 
-          <div
-            key={candidate.id}
-            style={styles.card}
-            onClick={() => setSelectedCandidate(candidate)}
-          >
+      <div
+        key={candidate.id}
+        style={styles.card}
+        onClick={() => setSelectedCandidate(candidate)}
+      >
 
-            <h2>{candidate.name}</h2>
-
-          </div>
-
-        ))}
+        <h2>{candidate.name}</h2>
 
       </div>
+
+    ))}
+
+</div>
 
       {/* MODAL */}
       {selectedCandidate && (
