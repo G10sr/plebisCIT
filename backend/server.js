@@ -713,7 +713,7 @@ app.get("/api/voting-config/:id", async (req, res) => {
 
     const { id } = req.params;
 
-    if (!id || id === "undefined") {
+    if (!id) {
       return res.status(400).json({
         error: "ID inválido"
       });
@@ -734,11 +734,13 @@ app.get("/api/voting-config/:id", async (req, res) => {
     res.json(result[0]);
 
   } catch (err) {
+
     console.error(err);
 
     res.status(500).json({
       error: "Error obteniendo configuración"
     });
+
   }
 });
 /* --------------------------- ESTO LO AÑADÍ (OLD = BASURA BODRIO 🤮) --------------------------- */

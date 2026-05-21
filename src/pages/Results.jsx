@@ -11,7 +11,7 @@ import { useParams } from "react-router-dom";
 
 function Results() {
 
-  const { id } = useParams();
+  const { configId  } = useParams();
 
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ function Results() {
 
         // Obtener configuración
         const votingRes = await fetch(
-          `http://localhost:3001/api/voting-config/${id}`
+          `http://localhost:3001/api/voting-config/${configId}`
         );
 
         const votingData = await votingRes.json();
@@ -54,7 +54,7 @@ function Results() {
 
     loadCandidates();
 
-  }, [id]);
+  }, [configId ]);
 
   if (loading) {
     return <h1>Cargando...</h1>;
