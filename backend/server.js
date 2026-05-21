@@ -702,47 +702,108 @@ app.get("/api/voting/:name", async (req, res) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => { });
 
+
 /* --------------------------- ESTO LO AÑADÍ (INTENTO 2 (FUNCIONÓ FAHHHHHHHHH)) --------------------------- */
 
 /* ─────────────────────────────────────────────
    OBTENER CONFIG POR ID
 ───────────────────────────────────────────── */
 
-app.get("/api/voting-config/:id", async (req, res) => {
+/* ─────────────────────────────────────────────
+   RESULTADOS DE VOTACIÓN
+───────────────────────────────────────────── */
+
+app.get("/api/voting-results/:configId", async (req, res) => {
+
   try {
 
-    const { id } = req.params;
+    const { configId } = req.params;
 
-    if (!id) {
-      return res.status(400).json({
-        error: "ID inválido"
-      });
-    }
-
-    const result = await sql`
-      SELECT *
+    // 1. Buscar votación
+    const votingConfig = await sql`
+      SELECT "Name"
       FROM "Votings_Config"
-      WHERE "Config_ID" = ${id}
+      WHERE "Config_ID" = ${configId}
     `;
 
-    if (!result.length) {
+    if (!votingConfig.length) {
       return res.status(404).json({
         error: "Votación no encontrada"
       });
     }
 
-    res.json(result[0]);
+    const votingName = votingConfig[0].Name;
+
+    // 2. Tablas dinámicas
+    const cleanName = formatTableName(votingName);
+
+    const optionsTable = `Vote_${cleanName}_Options`;
+    const dataTable = `Vote_${cleanName}_Data`;
+
+    // 3. Obtener opciones
+    const options = await sql`
+      SELECT
+        "ID",
+        "Name",
+        "Des",
+        "Color"
+      FROM ${sql(optionsTable)}
+      ORDER BY "ID"
+    `;
+
+    // 4. Contar votos por candidato
+    const results = [];
+
+    for (const option of options) {
+
+      const votes = await sql`
+        SELECT COUNT(*) AS total
+        FROM ${sql(dataTable)}
+        WHERE option_id = ${option.ID}
+        AND hasvoted = true
+      `;
+
+      results.push({
+        id: option.ID,
+        name: option.Name,
+        description: option.Des,
+        color: option.Color,
+        totalVotes: Number(votes[0].total)
+      });
+    }
+
+    // 5. Totales generales
+    const totalUsers = await sql`
+      SELECT COUNT(*) AS total
+      FROM ${sql(dataTable)}
+    `;
+
+    const totalVotes = await sql`
+      SELECT COUNT(*) AS total
+      FROM ${sql(dataTable)}
+      WHERE hasvoted = true
+    `;
+
+    res.json({
+      votingName,
+      totalUsers: Number(totalUsers[0].total),
+      totalVotes: Number(totalVotes[0].total),
+      candidates: results
+    });
 
   } catch (err) {
 
     console.error(err);
 
     res.status(500).json({
-      error: "Error obteniendo configuración"
+      error: "Error obteniendo resultados"
     });
 
   }
+
 });
+
+
 /* --------------------------- ESTO LO AÑADÍ (OLD = BASURA BODRIO 🤮) --------------------------- */
 
 /* ─────────────────────────────────────────────
