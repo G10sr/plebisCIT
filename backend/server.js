@@ -702,7 +702,7 @@ app.get("/api/voting/:name", async (req, res) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => { });
 
-/* --------------------------- ESTO LO AÑADÍ (INTENTO 2) --------------------------- */
+/* --------------------------- ESTO LO AÑADÍ (INTENTO 2 (FUNCIONÓ FAHHHHHHHHH)) --------------------------- */
 
 /* ─────────────────────────────────────────────
    OBTENER CONFIG POR ID
@@ -740,7 +740,7 @@ app.get("/api/voting-config/:id", async (req, res) => {
 
 });
 
-/* --------------------------- ESTO LO AÑADÍ (OLD) --------------------------- */
+/* --------------------------- ESTO LO AÑADÍ (OLD = BASURA BODRIO 🤮) --------------------------- */
 
 /* ─────────────────────────────────────────────
    RESULTADOS DE VOTACIÓN
