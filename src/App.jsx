@@ -7,7 +7,7 @@ import MenuVoting from "./pages/MenuVoting";
 import MenuVotingAdmin from "./pages/MenuVotingAdmin";
 import Voting from "./pages/Voting";
 import VoteComplete from "./pages/Confirm";
-import ResultsVotings from "./pages/Results";
+import Results from "./pages/Results";
 import AdminSettings from "./pages/AdminSettings";
 
 /**

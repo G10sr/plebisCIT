@@ -114,7 +114,14 @@ app.get("/api/votings/:cedula", async (req, res) => {
           WHERE ced = ${cedula}
         `;
 
+        // ✅ SI EL USUARIO NO ESTÁ EN LA TABLA
+        // NO MOSTRAR ESTA VOTACIÓN
+        if (!userData.length) {
+          continue;
+        }
+
         hasVoted = userData[0]?.hasvoted ?? false;
+
       } catch {
         continue;
       }
