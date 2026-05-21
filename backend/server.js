@@ -762,21 +762,61 @@ app.get("/api/voting-results/:configId", async (req, res) => {
     // 4. Contar votos por candidato
     const results = [];
 
+    // Buscar ID de "Not Defined"
+    const notDefinedOption = await sql`
+  SELECT "ID"
+  FROM ${sql(optionsTable)}
+  WHERE "Name" = 'Not Defined'
+`;
+
+    const notDefinedId = notDefinedOption[0]?.ID || null;
+
+    // Contar personas por candidato
     for (const option of options) {
 
-      const votes = await sql`
-        SELECT COUNT(*) AS total
-        FROM ${sql(dataTable)}
-        WHERE option_id = ${option.ID}
-        AND hasvoted = true
-      `;
+      let votes;
+
+      // Si el candidato es "Not Defined"
+      // también cuenta usuarios sin votar
+      if (option.Name === "Not Defined") {
+
+        votes = await sql`
+      SELECT COUNT(*) AS total
+      FROM ${sql(dataTable)}
+      WHERE option_id = ${option.ID}
+      OR (
+        option_id = ${notDefinedId}
+        AND hasvoted = false
+      )
+    `;
+
+      } else {
+
+        votes = await sql`
+      SELECT COUNT(*) AS total
+      FROM ${sql(dataTable)}
+      WHERE option_id = ${option.ID}
+      AND hasvoted = true
+    `;
+
+      }
 
       results.push({
         id: option.ID,
-        name: option.Name,
+
+        // Cambiar nombre visual
+        name: option.Name === "Not Defined"
+          ? "Negligencia"
+          : option.Name,
+
         description: option.Des,
+
         color: option.Color,
-        totalVotes: Number(votes[0].total)
+
+        totalVotes: Number(votes[0].total),
+
+        // Saber si es Negligencia
+        isNegligence: option.Name === "Not Defined"
       });
     }
 
