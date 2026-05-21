@@ -49,7 +49,7 @@ app.post("/api/admin-login", async (req, res) => {
     if (user.password !== password) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
- 
+
     res.json({
       success: true,
       admin: {
@@ -347,12 +347,12 @@ app.post("/api/voting/create", async (req, res) => {
 
     const safeOptions = (options || []).map(normalizeOption);
 
-      for (const opt of safeOptions) {
-  const imgs = opt.imagenes || [];
+    for (const opt of safeOptions) {
+      const imgs = opt.imagenes || [];
 
-  if (opt.id) {
+      if (opt.id) {
 
-    await sql`
+        await sql`
       UPDATE ${sql(optionsTable)}
       SET
         "Name" = ${opt.nombre},
@@ -366,9 +366,9 @@ app.post("/api/voting/create", async (req, res) => {
       WHERE "ID" = ${opt.id}
     `;
 
-  } else {
+      } else {
 
-    await sql`
+        await sql`
       INSERT INTO ${sql(optionsTable)}
       ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
       VALUES (
@@ -383,9 +383,9 @@ app.post("/api/voting/create", async (req, res) => {
       )
     `;
 
-  }
-}
-    
+      }
+    }
+
 
     const votoNulo = await sql`
   SELECT "ID"
@@ -456,11 +456,11 @@ app.put("/api/voting/update/:name", async (req, res) => {
       `);
     }
     for (const opt of safeOptions) {
-  const imgs = opt.imagenes || [];
+      const imgs = opt.imagenes || [];
 
-  if (opt.id) {
+      if (opt.id) {
 
-    await sql`
+        await sql`
       UPDATE ${sql(optionsTable)}
       SET
         "Name" = ${opt.nombre},
@@ -474,9 +474,9 @@ app.put("/api/voting/update/:name", async (req, res) => {
       WHERE "ID" = ${opt.id}
     `;
 
-  } else {
+      } else {
 
-    await sql`
+        await sql`
       INSERT INTO ${sql(optionsTable)}
       ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
       VALUES (
@@ -491,8 +491,8 @@ app.put("/api/voting/update/:name", async (req, res) => {
       )
     `;
 
-  }
-}
+      }
+    }
 
     // Re-insertar Voto Nulo después de actualizar opciones
     const votoNulo = await sql`
@@ -501,14 +501,14 @@ app.put("/api/voting/update/:name", async (req, res) => {
   WHERE "Name" = 'Voto Nulo'
 `;
 
-if (!votoNulo.length) {
-  await sql`
+    if (!votoNulo.length) {
+      await sql`
     INSERT INTO ${sql(optionsTable)}
     ("Name","Des","Color")
     VALUES ('Voto Nulo','invalid','#808080')
     ON CONFLICT ("Name") DO NOTHING
   `;
-}
+    }
 
     res.json({ success: true });
 
@@ -526,7 +526,7 @@ app.post("/api/voting/:name/import-csv", async (req, res) => {
   try {
     const { name } = req.params;
     // Cambiamos 'files' por 'data', que es lo que envías desde el front
-    const rows = req.body.data || []; 
+    const rows = req.body.data || [];
     console.log("Filas recibidas:", rows.length);
 
     const table = `Vote_${formatTableName(name)}_Data`;
@@ -754,21 +754,61 @@ app.get("/api/voting-results/:configId", async (req, res) => {
     // 4. Contar votos por candidato
     const results = [];
 
+    // Buscar ID de "Not Defined"
+    const notDefinedOption = await sql`
+  SELECT "ID"
+  FROM ${sql(optionsTable)}
+  WHERE "Name" = 'Not Defined'
+`;
+
+    const notDefinedId = notDefinedOption[0]?.ID || null;
+
+    // Contar personas por candidato
     for (const option of options) {
 
-      const votes = await sql`
-        SELECT COUNT(*) AS total
-        FROM ${sql(dataTable)}
-        WHERE option_id = ${option.ID}
-        AND hasvoted = true
-      `;
+      let votes;
+
+      // Si el candidato es "Not Defined"
+      // también cuenta usuarios sin votar
+      if (option.Name === "Not Defined") {
+
+        votes = await sql`
+      SELECT COUNT(*) AS total
+      FROM ${sql(dataTable)}
+      WHERE option_id = ${option.ID}
+      OR (
+        option_id = ${notDefinedId}
+        AND hasvoted = false
+      )
+    `;
+
+      } else {
+
+        votes = await sql`
+      SELECT COUNT(*) AS total
+      FROM ${sql(dataTable)}
+      WHERE option_id = ${option.ID}
+      AND hasvoted = true
+    `;
+
+      }
 
       results.push({
         id: option.ID,
-        name: option.Name,
+
+        // Cambiar nombre visual
+        name: option.Name === "Not Defined"
+          ? "Negligencia"
+          : option.Name,
+
         description: option.Des,
+
         color: option.Color,
-        totalVotes: Number(votes[0].total)
+
+        totalVotes: Number(votes[0].total),
+
+        // Saber si es Negligencia
+        isNegligence: option.Name === "Not Defined"
       });
     }
 

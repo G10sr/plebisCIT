@@ -72,7 +72,8 @@ function Results() {
             <h2>{candidate.name}</h2>
 
             <p style={styles.cardVotes}>
-              {candidate.totalVotes} votos
+              {candidate.totalVotes}{" "}
+              {candidate.isNegligence ? "personas" : "votos"}
             </p>
 
           </div>
@@ -105,7 +106,9 @@ function Results() {
 
             <p>{selectedCandidate.description}</p>
 
-            <h3>Total de votos</h3>
+            <h3>
+              Total de {selectedCandidate.isNegligence ? "personas" : "votos"}
+            </h3>
 
             <p style={styles.voteCount}>
               {selectedCandidate.totalVotes}
