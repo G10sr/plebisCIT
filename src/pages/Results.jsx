@@ -1,9 +1,5 @@
 /**
  * PÁGINA: RESULTADOS DE VOTACIÓN
- *
- * Obtiene y muestra:
- * - Candidatos
- * - Modal individual por candidato
  */
 
 import { useEffect, useState } from "react";
@@ -11,35 +7,29 @@ import { useParams } from "react-router-dom";
 
 function Results() {
 
-  const { configId  } = useParams();
+  const { configId } = useParams();
 
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal seleccionado
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
   useEffect(() => {
 
-    async function loadCandidates() {
+    async function loadResults() {
 
       try {
 
-        // Obtener configuración
-        const votingRes = await fetch(
-          `http://localhost:3001/api/voting-config/${configId}`
+        // NUEVO ENDPOINT
+        const res = await fetch(
+          `http://localhost:3001/api/voting-results/${configId}`
         );
 
-        const votingData = await votingRes.json();
+        const data = await res.json();
 
-        // Obtener candidatos
-        const candidatesRes = await fetch(
-          `http://localhost:3001/api/voting-options/${votingData.Name}`
-        );
+        console.log(data);
 
-        const candidatesData = await candidatesRes.json();
-
-        setCandidates(candidatesData);
+        setCandidates(data.candidates || []);
 
       } catch (err) {
 
@@ -52,9 +42,9 @@ function Results() {
       }
     }
 
-    loadCandidates();
+    loadResults();
 
-  }, [configId ]);
+  }, [configId]);
 
   if (loading) {
     return <h1>Cargando...</h1>;
@@ -65,25 +55,31 @@ function Results() {
 
       <h1>Resultados</h1>
 
-      {/* LISTA DE CANDIDATOS */}
+      {/* GRID */}
       <div style={styles.grid}>
 
-  {Array.isArray(candidates) &&
-    candidates.map(candidate => (
+        {candidates.map(candidate => (
 
-      <div
-        key={candidate.id}
-        style={styles.card}
-        onClick={() => setSelectedCandidate(candidate)}
-      >
+          <div
+            key={candidate.id}
+            style={{
+              ...styles.card,
+              background: candidate.color || "#1e1e1e"
+            }}
+            onClick={() => setSelectedCandidate(candidate)}
+          >
 
-        <h2>{candidate.name}</h2>
+            <h2>{candidate.name}</h2>
+
+            <p style={styles.cardVotes}>
+              {candidate.totalVotes} votos
+            </p>
+
+          </div>
+
+        ))}
 
       </div>
-
-    ))}
-
-</div>
 
       {/* MODAL */}
       {selectedCandidate && (
@@ -109,21 +105,11 @@ function Results() {
 
             <p>{selectedCandidate.description}</p>
 
-            {/* IMÁGENES */}
-            <div style={styles.imagesContainer}>
+            <h3>Total de votos</h3>
 
-              {selectedCandidate.images?.map((img, index) => (
-
-                <img
-                  key={index}
-                  src={img}
-                  alt={selectedCandidate.name}
-                  style={styles.image}
-                />
-
-              ))}
-
-            </div>
+            <p style={styles.voteCount}>
+              {selectedCandidate.totalVotes}
+            </p>
 
           </div>
 
@@ -135,13 +121,14 @@ function Results() {
   );
 }
 
-/* ESTILOS */
-
 const styles = {
 
   container: {
     padding: "40px",
     textAlign: "center",
+    minHeight: "100vh",
+    background: "#121212",
+    color: "white",
   },
 
   grid: {
@@ -152,12 +139,18 @@ const styles = {
   },
 
   card: {
-    background: "#1e1e1e",
-    color: "white",
     padding: "30px",
     borderRadius: "15px",
     cursor: "pointer",
     transition: "0.3s",
+    color: "white",
+    boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
+  },
+
+  cardVotes: {
+    marginTop: "10px",
+    fontSize: "20px",
+    fontWeight: "bold",
   },
 
   overlay: {
@@ -194,19 +187,13 @@ const styles = {
     width: "35px",
     height: "35px",
     cursor: "pointer",
+    fontWeight: "bold",
   },
 
-  imagesContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: "10px",
+  voteCount: {
+    fontSize: "50px",
+    fontWeight: "bold",
     marginTop: "20px",
-  },
-
-  image: {
-    width: "150px",
-    borderRadius: "10px",
   },
 
 };
