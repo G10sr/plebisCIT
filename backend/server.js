@@ -49,7 +49,7 @@ app.post("/api/admin-login", async (req, res) => {
     if (user.password !== password) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
- 
+
     res.json({
       success: true,
       admin: {
@@ -106,26 +106,26 @@ app.get("/api/votings/:cedula", async (req, res) => {
       const optionsTable = `Vote_${formatTableName(name)}_Options`;
 
       let userData;
-let hasVoted = false;
+      let hasVoted = false;
 
-try {
+      try {
 
-  userData = await sql`
+        userData = await sql`
     SELECT hasvoted
     FROM ${sql(dataTable)}
     WHERE ced = ${cedula}
   `;
 
-  // 🔥 si no existe la cédula, saltar esta votación
-  if (!userData.length) {
-    continue;
-  }
+        // 🔥 si no existe la cédula, saltar esta votación
+        if (!userData.length) {
+          continue;
+        }
 
-  hasVoted = userData[0].hasvoted ?? false;
+        hasVoted = userData[0].hasvoted ?? false;
 
-} catch {
-  continue;
-}
+      } catch {
+        continue;
+      }
 
       let options = [];
 
@@ -355,12 +355,12 @@ app.post("/api/voting/create", async (req, res) => {
 
     const safeOptions = (options || []).map(normalizeOption);
 
-      for (const opt of safeOptions) {
-  const imgs = opt.imagenes || [];
+    for (const opt of safeOptions) {
+      const imgs = opt.imagenes || [];
 
-  if (opt.id) {
+      if (opt.id) {
 
-    await sql`
+        await sql`
       UPDATE ${sql(optionsTable)}
       SET
         "Name" = ${opt.nombre},
@@ -374,9 +374,9 @@ app.post("/api/voting/create", async (req, res) => {
       WHERE "ID" = ${opt.id}
     `;
 
-  } else {
+      } else {
 
-    await sql`
+        await sql`
       INSERT INTO ${sql(optionsTable)}
       ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
       VALUES (
@@ -391,9 +391,9 @@ app.post("/api/voting/create", async (req, res) => {
       )
     `;
 
-  }
-}
-    
+      }
+    }
+
 
     const votoNulo = await sql`
   SELECT "ID"
@@ -464,11 +464,11 @@ app.put("/api/voting/update/:name", async (req, res) => {
       `);
     }
     for (const opt of safeOptions) {
-  const imgs = opt.imagenes || [];
+      const imgs = opt.imagenes || [];
 
-  if (opt.id) {
+      if (opt.id) {
 
-    await sql`
+        await sql`
       UPDATE ${sql(optionsTable)}
       SET
         "Name" = ${opt.nombre},
@@ -482,9 +482,9 @@ app.put("/api/voting/update/:name", async (req, res) => {
       WHERE "ID" = ${opt.id}
     `;
 
-  } else {
+      } else {
 
-    await sql`
+        await sql`
       INSERT INTO ${sql(optionsTable)}
       ("Name","Des","Img1","Img2","Img3","Img4","Img5","Color")
       VALUES (
@@ -499,8 +499,8 @@ app.put("/api/voting/update/:name", async (req, res) => {
       )
     `;
 
-  }
-}
+      }
+    }
 
     // Re-insertar Voto Nulo después de actualizar opciones
     const votoNulo = await sql`
@@ -509,14 +509,14 @@ app.put("/api/voting/update/:name", async (req, res) => {
   WHERE "Name" = 'Voto Nulo'
 `;
 
-if (!votoNulo.length) {
-  await sql`
+    if (!votoNulo.length) {
+      await sql`
     INSERT INTO ${sql(optionsTable)}
     ("Name","Des","Color")
     VALUES ('Voto Nulo','invalid','#808080')
     ON CONFLICT ("Name") DO NOTHING
   `;
-}
+    }
 
     res.json({ success: true });
 
@@ -534,7 +534,7 @@ app.post("/api/voting/:name/import-csv", async (req, res) => {
   try {
     const { name } = req.params;
     // Cambiamos 'files' por 'data', que es lo que envías desde el front
-    const rows = req.body.data || []; 
+    const rows = req.body.data || [];
     console.log("Filas recibidas:", rows.length);
 
     const table = `Vote_${formatTableName(name)}_Data`;
