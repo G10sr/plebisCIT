@@ -4,7 +4,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import GlobalLoader from "../components/GlobalLoader";
 import "../assets/css/Results.css"
 
 import {
@@ -40,10 +39,7 @@ function Results() {
   useEffect(() => {
 
     async function loadResults() {
-
       try {
-
-        // NUEVO ENDPOINT
         const res = await fetch(
           `http://localhost:3001/api/voting-results/${configId}`
         );
@@ -53,24 +49,28 @@ function Results() {
         console.log(data);
 
         setCandidates(data.candidates || []);
-
       } catch (err) {
-
         console.error(err);
-
       } finally {
-
         setLoading(false);
-
       }
     }
 
+    // carga inicial inmediata
     loadResults();
+
+    // actualizar cada 6 segundos
+    const interval = setInterval(() => {
+      loadResults();
+    }, 6000);
+
+    // cleanup cuando el componente se desmonta
+    return () => clearInterval(interval);
 
   }, [configId]);
 
   if (loading) {
-    return <GlobalLoader show text="Cargando..." />;
+    return <h1>Cargando...</h1>;
   }
   // ORDENAR: voto nulo y abstinencia al final
   const sortedCandidates = [...candidates].sort((a, b) => {
@@ -319,9 +319,9 @@ const styles = {
     height: "30px",
     display: "flex",
     alignItems: "center",
-      borderRadius: "10px",
+    borderRadius: "10px",
     justifyContent: "center",
-}
+  }
 };
 
 export default Results;
