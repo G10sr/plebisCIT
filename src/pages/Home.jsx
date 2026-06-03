@@ -29,13 +29,46 @@ function Home() {
      * Iniciar flujo de votación
      * Valida que haya cédula y navega a la lista de votaciones
      */
-    const handleStart = (e) => {
+    const handleStart = async (e) => {
         e.preventDefault();
+
         if (!idUser) {
             alert("Por favor ingresa tu cédula");
             return;
         }
-        navigate("/menuvoting", { replace: true, state: { cedula: idUser } });
+
+        try {
+
+            const res = await fetch(
+                `http://localhost:3001/api/votings/${idUser}`
+            );
+
+            const data = await res.json();
+
+            // 🔥 Si no está en ninguna votación visible
+            if (!Array.isArray(data) || data.length === 0) {
+
+                alert(
+                    "No estás registrado en ninguna votación.\n\nRevisa si tu cédula está correcta."
+                );
+
+                navigate("/home", { replace: true });
+                return;
+            }
+
+            // ✅ Sí pertenece a una votación
+            navigate("/menuvoting", {
+                replace: true,
+                state: { cedula: idUser }
+            });
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert("Error verificando votaciones");
+
+        }
     };
 
     return (

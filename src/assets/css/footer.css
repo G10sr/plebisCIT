@@ -11,4 +11,5 @@
 
 #Footer img {
     margin-left: auto;
+    object-fit: contain;
 }
