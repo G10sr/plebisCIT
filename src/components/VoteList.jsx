@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
+import GlobalLoader from "./GlobalLoader";
 import "../assets/css/VoteList.css";
 import "../assets/css/VoteListSelected.css";
 
@@ -148,7 +149,7 @@ function VoteObject() {
 
   // Mostrar estado de carga
   if (isLoading) {
-    return <p className="noVotings">Cargando...</p>;
+    return <GlobalLoader show text="Cargando..." />;
   }
 
   // Mostrar mensaje si no hay votaciones disponibles

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import GlobalLoader from "../components/GlobalLoader";
 import "../assets/css/MenuVoting.css";
 import VoteListAdmin from "../components/VoteListAdmin";
 
@@ -26,11 +27,7 @@ function MenuVotingAdmin() {
     }, [navigate]);
 
     if (isLoading) {
-        return (
-            <p style={{ textAlign: "center", paddingTop: "100px" }}>
-                Cargando opciones...
-            </p>
-        );
+        return <GlobalLoader show text="Cargando opciones..." />;
     }
 
     return (

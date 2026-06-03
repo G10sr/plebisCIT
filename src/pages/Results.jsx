@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import GlobalLoader from "../components/GlobalLoader";
 import "../assets/css/Results.css"
 
 import {
@@ -69,7 +70,7 @@ function Results() {
   }, [configId]);
 
   if (loading) {
-    return <h1>Cargando...</h1>;
+    return <GlobalLoader show text="Cargando..." />;
   }
   // ORDENAR: voto nulo y abstinencia al final
   const sortedCandidates = [...candidates].sort((a, b) => {

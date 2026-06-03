@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PartidoCard from "../components/PartidoCard";
 import PartidoModal from "../components/PartidoModal";
 import img from '../assets/img/CRvotos.png';
+import GlobalLoader from "../components/GlobalLoader";
 
 /**
  * PÁGINA DE VOTACIÓN
@@ -118,7 +119,7 @@ function Vote() {
 
     // Mostrar estado de carga
     if (isLoading) {
-        return <p style={{ textAlign: "center", paddingTop: "100px" }}>Cargando opciones...</p>;
+        return <GlobalLoader show text="Cargando opciones..." />;
     }
 
     // Mostrar mensaje de error
