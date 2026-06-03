@@ -46,8 +46,6 @@ function Results() {
 
         const data = await res.json();
 
-        console.log(data);
-
         setCandidates(data.candidates || []);
       } catch (err) {
         console.error(err);

@@ -535,7 +535,6 @@ app.post("/api/voting/:name/import-csv", async (req, res) => {
     const { name } = req.params;
     // Cambiamos 'files' por 'data', que es lo que envías desde el front
     const rows = req.body.data || [];
-    console.log("Filas recibidas:", rows.length);
 
     const table = `Vote_${formatTableName(name)}_Data`;
     let inserted = 0;
