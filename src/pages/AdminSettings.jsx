@@ -563,43 +563,43 @@ export default function NuevaVotacion() {
   const removeOption = (index) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
 
-  // const parseCsvFile = async (file, defaultGroup = "") => {
-  //   const text = await file.text();
+   const parseCsvFile = async (file, defaultGroup = "") => {
+     const text = await file.text();
 
-  //   const lines = text
-  //     .split(/\r?\n/)
-  //     .map(l => l.trim())
-  //     .filter(Boolean);
+     const lines = text
+       .split(/\r?\n/)
+       .map(l => l.trim())
+       .filter(Boolean);
 
-  //   if (!lines.length) return [];
+     if (!lines.length) return [];
 
-  //   const headerLine = lines[0];
+     const headerLine = lines[0];
 
-  //   // detectar separador real
-  //   let delimiter = ",";
-  //   if (headerLine.includes(";")) delimiter = ";";
-  //   else if (headerLine.includes("\t")) delimiter = "\t";
+     // detectar separador real
+     let delimiter = ",";
+     if (headerLine.includes(";")) delimiter = ";";
+     else if (headerLine.includes("\t")) delimiter = "\t";
 
-  //   const headers = headerLine
-  //     .split(delimiter)
-  //     .map(h => h.trim().toLowerCase());
+     const headers = headerLine
+       .split(delimiter)
+       .map(h => h.trim().toLowerCase());
 
-  //   return lines.slice(1).map(line => {
-  //     const values = line.split(delimiter).map(v => v.trim());
+     return lines.slice(1).map(line => {
+       const values = line.split(delimiter).map(v => v.trim());
 
-  //     const row = {};
+       const row = {};
 
-  //     headers.forEach((h, i) => {
-  //       row[h] = values[i];
-  //     });
+       headers.forEach((h, i) => {
+         row[h] = values[i];
+       });
 
-  //     return {
-  //       ced: row.ced || row.cedula || row.id || "",
-  //       nombre: row.nombre || row.name || "",
-  //       grado: row.grado || row.grade || defaultGroup || "",
-  //     };
-  //   }).filter(r => r.ced && r.nombre);
-  // };
+       return {
+         ced: row.ced || row.cedula || row.id || "",
+         nombre: row.nombre || row.name || "",
+         grado: row.grado || row.grade || defaultGroup || "",
+       };
+     }).filter(r => r.ced && r.nombre);
+   };
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
@@ -693,31 +693,31 @@ export default function NuevaVotacion() {
 
       const nombreParaImportar = nombre;
 
-      // if (csvFiles.length > 0) {
-      //   try {
-      //     const allCsvRows = [];
-      //     for (const item of csvFiles) {
-      //       const rows = await parseCsvFile(item.file, item.tag);
-      //       allCsvRows.push(...rows);
-      //     }
+      if (csvFiles.length > 0) {
+         try {
+           const allCsvRows = [];
+           for (const item of csvFiles) {
+             const rows = await parseCsvFile(item.file, item.tag);
+             allCsvRows.push(...rows);
+           }
 
-      //     if (allCsvRows.length > 0) {
-      //       const csvRes = await fetch(`/api/voting/${encodeURIComponent(nombreParaImportar)}/import-csv`, {
-      //         method: "POST",
-      //         headers: { "Content-Type": "application/json" },
-      //         body: JSON.stringify({ data: allCsvRows })
-      //       });
+           if (allCsvRows.length > 0) {
+             const csvRes = await fetch(`/api/voting/${encodeURIComponent(nombreParaImportar)}/import-csv`, {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({ data: allCsvRows })
+             });
 
-      //       if (!csvRes.ok) {
-      //         const errorData = await csvRes.json();
-      //         throw new Error(errorData.error || "Error al subir el contenido del CSV");
-      //       }
-      //     }
-      //   } catch (csvErr) {
-      //     alert("Votación creada, pero: " + csvErr.message);
-      //     return; // Detenemos para que el usuario sepa que algo falló
-      //   }
-      // }
+             if (!csvRes.ok) {
+               const errorData = await csvRes.json();
+               throw new Error(errorData.error || "Error al subir el contenido del CSV");
+             }
+           }
+         } catch (csvErr) {
+           alert("Votación creada, pero: " + csvErr.message);
+           return; // Detenemos para que el usuario sepa que algo falló
+         }
+      }
 
       // alert("✓ Todo se guardó correctamente");
 
@@ -887,20 +887,10 @@ export default function NuevaVotacion() {
                 <span style={{ fontSize: 12, color: "var(--botonesHover)" }}>ESTA AREA ESTARA DISPONIBLE PROXIMAMENETE</span>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 40px", marginBottom: 16 }}>
-                {GRUPOS.map(([izq, der]) => (
-                  <React.Fragment key={`${izq}-${der}`}>
-                    {izq && <CustomCheckbox key={izq} label={izq} checked={!!grupos[izq]} onChange={() => toggleGrupo(izq)} />}
-                    {der && <CustomCheckbox key={der} label={der} checked={!!grupos[der]} onChange={() => toggleGrupo(der)} />}
-                    {!der && <div />}
-                  </React.Fragment>
-                ))}
-              </div>
 
               {/* CSV */}
-              {/* CSV */}
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 8 }}>
-                <div style={{ textAlign: "right", maxWidth: 260 }}>
+              <div style={{ display: "flex", justifyContent: "flex-start", gap: 12, marginTop: 8 }}>
+                <div style={{ textAlign: "right", maxWidth: 300 }}>
 
                   <label style={btnSecondaryStyle}>
                     Insertar Datos por CSV
@@ -912,9 +902,8 @@ export default function NuevaVotacion() {
                         const files = Array.from(e.target.files);
                         const newFiles = files.map((f) => ({ file: f, tag: "" }));
 
-                        // setCsvFiles((prev) => [...prev, ...newFiles]);
+                        setCsvFiles((prev) => [...prev, ...newFiles]);
 
-                        // 🔥 reset para permitir volver a seleccionar el mismo archivo
                         e.target.value = null;
                       }}
                       style={{ display: "none" }}
@@ -940,7 +929,7 @@ export default function NuevaVotacion() {
                           {/* eliminar */}
                           <button
                             onClick={() => {
-                              // setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
+                               setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
                             }}
                             style={{
                               position: "absolute",
@@ -965,9 +954,9 @@ export default function NuevaVotacion() {
                           <select
                             value={item.tag}
                             onChange={(e) => {
-                              // const updated = [...csvFiles];
-                              // updated[i].tag = e.target.value;
-                              // setCsvFiles(updated);
+                              const updated = [...csvFiles];
+                              updated[i].tag = e.target.value;
+                              setCsvFiles(updated);
                             }}
                             style={{
                               width: "100%",
