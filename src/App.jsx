@@ -9,24 +9,8 @@ import Voting from "./pages/Voting";
 import VoteComplete from "./pages/Confirm";
 import Results from "./pages/Results";
 import AdminSettings from "./pages/AdminSettings";
+import "./App.css";
 
-/**
- * COMPONENTE RAÍZ: APP
- * 
- * Estructura principal de la aplicación con enrutamiento.
- * 
- * Rutas públicas (Usuario):
- * - / : Página de inicio con entrada de cédula
- * - /menuvoting : Lista de votaciones disponibles
- * - /vote : Página de votación
- * - /voteConfirm : Confirmación de voto registrado
- * 
- * Rutas administrativas:
- * - /admin : Panel de administración
- * - /menuvotingAdmin : Lista de votaciones para administrador
- * - /adminsettings/:id : Configuración de votación
- * - /resultsvoting/:id : Resultados de votación
- */
 function App() {
   return (
     <BrowserRouter>

@@ -1,14 +1,4 @@
-/**
- * PUNTO DE ENTRADA: MAIN.JSX
- * 
- * Archivo principal de React que monta la aplicación.
- * 
- * Proceso:
- * 1. Importa el componente raíz App
- * 2. Importa los estilos globales (index.css)
- * 3. Monta la aplicación en el elemento DOM con id="root"
- * 4. Usa React.StrictMode para detectar problemas en desarrollo
- */
+
 
 import React from "react";
 import ReactDOM from "react-dom/client";

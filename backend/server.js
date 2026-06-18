@@ -70,7 +70,7 @@ app.post("/api/admin-login", async (req, res) => {
 
 app.get("/api/votings/:cedula", async (req, res) => {
   const { cedula } = req.params;
-
+  let userName = "Usuario";
   try {
     const votingsConfig = await sql`
       SELECT * FROM "Votings_Config"
@@ -111,15 +111,15 @@ app.get("/api/votings/:cedula", async (req, res) => {
       try {
 
         userData = await sql`
-    SELECT hasvoted
-    FROM ${sql(dataTable)}
-    WHERE ced = ${cedula}
-  `;
+  SELECT hasvoted, nombre
+  FROM ${sql(dataTable)}
+  WHERE ced = ${cedula}
+`;
 
-        // 🔥 si no existe la cédula, saltar esta votación
         if (!userData.length) {
           continue;
         }
+        userName = userData[0].nombre || "";
 
         hasVoted = userData[0].hasvoted ?? false;
 
@@ -148,6 +148,7 @@ app.get("/api/votings/:cedula", async (req, res) => {
         options,
         adminName,
         hasVoted,
+        userName,
         Start_time: voting.Start_time,
         End_time: voting.End_time,
         Vigente: voting.Vigente

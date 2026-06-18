@@ -20,12 +20,14 @@ import "../assets/css/VoteListSelected.css";
  * - "Votación finalizada": El período de votación ha terminado
  */
 function VoteObject() {
+  //Estado para el nombre del usuario
+  const [userName, setUserName] = useState("");
   // Estado de la votación seleccionada
   const [selectedVoting, setSelectedVoting] = useState(null);
-  
+
   // Lista de votaciones obtenidas del servidor
   const [votings, setVotings] = useState([]);
-  
+
   // Estados de carga y errores
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -66,7 +68,12 @@ function VoteObject() {
         }
 
         const data = await res.json();
+
         setVotings(data);
+
+        if (data.length > 0) {
+          setUserName(data[0].userName);
+        }
 
       } catch (err) {
         console.error(err);
@@ -162,7 +169,14 @@ function VoteObject() {
   }
 
   return (
+    <>
+    <div className="welcomeUser">
+              Bienvenido, {userName}
+            </div>
     <div className="voteListContainer">
+
+      
+            
       {/* Renderizar cada votación disponible */}
       {processedVotings.map((voting) => {
         const isSelected =
@@ -178,6 +192,7 @@ function VoteObject() {
               !voting.isDisabled && setSelectedVoting(voting)
             }
           >
+            
             {/* Contenido de la tarjeta de votación */}
             <div className="divObj">
               {/* Nombre de la votación */}
@@ -208,6 +223,7 @@ function VoteObject() {
         VOTAR AHORA
       </button>
     </div>
+    </>
   );
 }
 

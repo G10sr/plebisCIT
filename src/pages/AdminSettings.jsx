@@ -692,6 +692,8 @@ export default function NuevaVotacion() {
       }
 
       const nombreParaImportar = nombre;
+      
+      {/* ////////////// NO FUNCIONA //////////////////*/}
 
       if (csvFiles.length > 0) {
          try {
@@ -718,6 +720,8 @@ export default function NuevaVotacion() {
            return; // Detenemos para que el usuario sepa que algo falló
          }
       }
+
+      {/* /////////////////////////////////////////////////*/}
 
       // alert("✓ Todo se guardó correctamente");
 
@@ -830,9 +834,7 @@ export default function NuevaVotacion() {
 
         {/* Mostrar loader mientras carga */}
         {loading && (
-          <div style={{ textAlign: "center", padding: "40px 0" }}>
-            <p style={{ color: "var(--muted)", fontSize: 14 }}>Cargando votación...</p>
-          </div>
+          <GlobalLoader show text="Cargando opciones..." />
         )}
 
         {!loading && (
@@ -891,6 +893,7 @@ export default function NuevaVotacion() {
               {/* CSV */}
               <div style={{ display: "flex", justifyContent: "flex-start", gap: 12, marginTop: 8 }}>
                 <div style={{ textAlign: "right", maxWidth: 300 }}>
+                  {/* //////////// TODAVIA NO FUNCIONA ////////////////*/}
 
                   <label style={btnSecondaryStyle}>
                     Insertar Datos por CSV
@@ -909,8 +912,10 @@ export default function NuevaVotacion() {
                       style={{ display: "none" }}
                     />
                   </label>
+                  {/* /////////////////////////////////////////////////*/}
 
                   {/* Lista de archivos */}
+                  {/* //////////// TODAVIA NO FUNCIONA ////////////////*/}
                   {csvFiles.length > 0 && (
                     <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
                       {csvFiles.map((item, i) => (
@@ -980,6 +985,7 @@ export default function NuevaVotacion() {
                       ))}
                     </div>
                   )}
+                  {/* /////////////////////////////////////////////////*/}
 
                   <p style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
                     Importar los datos de las personas<br />

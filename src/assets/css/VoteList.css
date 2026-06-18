@@ -118,3 +118,22 @@
         right: 1.5rem;
     }
 }
+
+.welcomeUser {
+margin-top: 10px;
+margin-left: 10vw;
+  margin-bottom: 25px;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  color: #2d3436;
+
+  letter-spacing: 0.5px;
+
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.welcomeUser span {
+  color: #6c5ce7;
+}

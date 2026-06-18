@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../assets/css/Results.css"
+import GlobalLoader from "../components/GlobalLoader";
 
 import {
   Chart as ChartJS,
@@ -68,7 +69,7 @@ function Results() {
   }, [configId]);
 
   if (loading) {
-    return <h1>Cargando...</h1>;
+    return <GlobalLoader show text="Cargando opciones..." />;
   }
   // ORDENAR: voto nulo y abstinencia al final
   const sortedCandidates = [...candidates].sort((a, b) => {
@@ -234,6 +235,8 @@ const styles = {
     textAlign: "center",
     minHeight: "100vh",
     color: "white",
+            overflow: "hidden",
+
   },
   chartContainer: {
     width: "400px",
@@ -241,7 +244,8 @@ const styles = {
     background: "white",
     padding: "20px",
     borderRadius: "20px",
-    marginTop: "10vh"
+    marginTop: "10vh",
+
   },
 
   grid: {
@@ -277,6 +281,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 999,
+    
   },
 
   modal: {
