@@ -22,7 +22,7 @@ import React, { useState } from "react";
 function PartidoModal({ partido, onClose, onSelect }) {
     // Índice de la imagen actual en el carrusel
     const [index, setIndex] = useState(0);
-    
+
     // Detectar si hay múltiples imágenes para habilitar navegación
     const hayVariasImagenes = partido.imagenes.length > 1;
 
@@ -63,21 +63,33 @@ function PartidoModal({ partido, onClose, onSelect }) {
                 </div>
 
 
-                {/* CARRUSEL */}
                 <div
                     style={{
                         ...styles.carrusel,
-                        backgroundColor: partido.color || "#9ecbff"
+                        backgroundColor:
+                            !partido.imagenes?.length
+                                ? partido.color || "#9ecbff"
+                                : "#fff"
                     }}
                 >
-                    <img
-                        src={partido.imagenes[index]}
-                        style={styles.image}
-                        alt="Imagen del partido"
-                    />
+
+                    {partido.imagenes?.length > 0 ? (
+
+                        <img
+                            src={partido.imagenes[index]}
+                            style={styles.image}
+                            alt="Imagen del partido"
+                            onError={(e) => {
+                                e.currentTarget.style.display = "none";
+                            }}
+                        />
+
+                    ) : null}
+
 
                     {/* CONTROLES */}
                     <div style={styles.controls}>
+
                         <button
                             style={{
                                 ...styles.controlButton,
@@ -90,6 +102,7 @@ function PartidoModal({ partido, onClose, onSelect }) {
                             ◀
                         </button>
 
+
                         <button
                             style={{
                                 ...styles.controlButton,
@@ -101,22 +114,9 @@ function PartidoModal({ partido, onClose, onSelect }) {
                         >
                             ▶
                         </button>
+
                     </div>
 
-                    {/* INDICADORES */}
-                    {hayVariasImagenes && (
-                        <div style={styles.indicators}>
-                            {partido.imagenes.map((_, i) => (
-                                <span
-                                    key={i}
-                                    style={{
-                                        ...styles.dot,
-                                        backgroundColor: i === index ? "#2f80ed" : "#949494",
-                                    }}
-                                />
-                            ))}
-                        </div>
-                    )}
                 </div>
 
             </div>

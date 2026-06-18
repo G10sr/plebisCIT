@@ -1,23 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 
 /**
- * COMPONENTE: TARJETA DE OPCiÓN
- * 
- * Muestra cada opción de votación en formato de tarjeta.
- * 
- * Propiedades:
- * - partido: Objeto con datos de la opción (id, nombre, descripción, imágenes, color)
- * - onClick: Función al hacer clic
- * - seleccionado: Boolean si está seleccionada
- * 
- * Estilos especiales:
- * - Voto nulo: Fondo gris y patrón de línea punteada
- * - Seleccionado: Borde grueso del color del partido
- * - Normal: Borde gris estándar
+ * COMPONENTE: TARJETA DE OPCIÓN
  */
 function PartidoCard({ partido, onClick, seleccionado }) {
-  // Detectar si es la opción de voto nulo
+
   const esNulo = partido.id === 0;
+
+  const [imagenFallida, setImagenFallida] = useState(false);
+
+  const tieneImagen = partido.imagenes?.length > 0;
 
 
   return (
@@ -27,7 +19,7 @@ function PartidoCard({ partido, onClick, seleccionado }) {
         ...styles.card,
 
         border: seleccionado
-          ? `3px solid ${partido.color || "#2f80ed"}`
+          ? `7px solid ${partido.color || "#2f80ed"}`
           : esNulo
             ? "3px dashed #4d4d4d"
             : "2px solid rgb(180, 180, 180)",
@@ -37,39 +29,73 @@ function PartidoCard({ partido, onClick, seleccionado }) {
         ...(esNulo && styles.nullCard),
       }}
     >
+
       {esNulo ? (
-        <h2 style={styles.nullText}>Voto nulo</h2>
+
+        <h2 style={styles.nullText}>
+          Voto nulo
+        </h2>
+
       ) : (
+
         <div style={styles.content}>
+
           <div style={styles.textContainer}>
-            <h3 style={styles.title}>{partido.nombre}</h3>
-            <p style={styles.description}>{partido.descripcionCorta}</p>
+            <h3 style={styles.title}>
+              {partido.nombre}
+            </h3>
+
+            <p style={styles.description}>
+              {partido.descripcionCorta}
+            </p>
           </div>
 
-          <div style={styles.imageContainer}>
-            <img
-              src={partido.imagenes?.[0]}
-              alt={partido.nombre}
-              style={styles.image}
-            />
+
+          <div
+            style={{
+              ...styles.imageContainer,
+
+              // Solo el carrusel/espacio de imagen usa el color
+              backgroundColor:
+                !tieneImagen || imagenFallida
+                  ? partido.color || "#9ecbff"
+                  : "transparent",
+            }}
+          >
+
+            {tieneImagen && !imagenFallida && (
+
+              <img
+                src={partido.imagenes[0]}
+                alt={partido.nombre}
+                style={styles.image}
+                onError={() => setImagenFallida(true)}
+              />
+
+            )}
+
           </div>
+
         </div>
+
       )}
+
     </div>
   );
 }
 
+
 const styles = {
+
   card: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     overflow: "hidden",
     width: "100%",
-    height: 240, // ⬅️ más grande
+    height: 240,
     cursor: "pointer",
-    border: "2px solid #b4b4b4",
-    transition: "all 0.2s ease", // ⬅️ animación suave
+    transition: "all 0.2s ease",
   },
+
 
   nullCard: {
     display: "flex",
@@ -77,32 +103,38 @@ const styles = {
     justifyContent: "center",
   },
 
+
   nullText: {
-    fontSize: 30, // ⬅️ más grande
+    fontSize: 30,
     fontWeight: "bold",
     color: "#ffffff",
     textAlign: "center",
   },
+
 
   content: {
     display: "flex",
     height: "100%",
   },
 
+
   textContainer: {
     flex: 1.5,
-    padding: 20, // ⬅️ más espacio interno
+    padding: 20,
   },
+
 
   title: {
     fontSize: 20,
     marginBottom: 8,
   },
 
+
   description: {
     fontSize: 16,
     lineHeight: 1.4,
   },
+
 
   imageContainer: {
     flex: 1.5,
@@ -111,11 +143,14 @@ const styles = {
     justifyContent: "center",
   },
 
+
   image: {
     width: "100%",
     height: "100%",
     objectFit: "cover",
   },
+
 };
+
 
 export default PartidoCard;
