@@ -12,7 +12,7 @@ function PartidoCard({ partido, onClick, seleccionado }) {
   const tieneImagen = partido.imagenes?.length > 0;
 
 
-  return (
+  return ( /* Tarjetas de votación */
     <div
       onClick={onClick}
       style={{

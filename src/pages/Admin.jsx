@@ -134,7 +134,7 @@ const styles = {
         justifyContent: "center",
         alignItems: "center",
     },
-    modal: {
+    modal: { /* El modal en donde se encuentran los textos de inicio de sesión. */
         background: "#fff",
         padding: "20px",
         borderRadius: "20px",

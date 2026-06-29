@@ -3,6 +3,8 @@ import React from "react";
 export default function GlobalLoader({ show, text = "Procesando..." }) {
   if (!show) return null;
 
+/* Formatos generales */
+  
   return (
     <div style={{
       position: "fixed",

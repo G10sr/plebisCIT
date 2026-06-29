@@ -11,6 +11,10 @@ import Results from "./pages/Results";
 import AdminSettings from "./pages/AdminSettings";
 import "./App.css";
 
+// El formato de ventanas es el siguiente:
+// import Nombre from "./pages/Nombre"; (Ingresar ubicación del archivo en su respectivo folder)
+// <Route path="/nombre" element={<Nombre />} />
+
 function App() {
   return (
     <BrowserRouter>
