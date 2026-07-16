@@ -181,12 +181,12 @@ function TextArea({ placeholder, value, onChange, minHeight = 80 }) {
 }
 
 /** Date picker estilizado */
-function DateInput({ value, onChange }) {
+function DateInput({ value, onChange, type = "date" }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ position: "relative" }}>
       <input
-        type="date"
+        type={type}
         value={value}
         onChange={onChange}
         style={{
@@ -497,6 +497,16 @@ export default function NuevaVotacion() {
     }
   }, [id, isNewVoting]);
 
+  const formatDateTimeForInput = (value) => {
+    if (!value) return "";
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+
+    const timezoneOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
+  };
+
   const loadVotingData = async (votingName) => {
     try {
       const res = await fetch(`/api/voting/${votingName}`);
@@ -510,17 +520,8 @@ export default function NuevaVotacion() {
 
       setNombre(data.Name);
       setNombreOriginal(data.Name);
-      setInicio(
-        data.Start_time
-          ? new Date(data.Start_time).toISOString().split("T")[0]
-          : ""
-      );
-
-      setFinal(
-        data.End_time
-          ? new Date(data.End_time).toISOString().split("T")[0]
-          : ""
-      );
+      setInicio(formatDateTimeForInput(data.Start_time));
+      setFinal(formatDateTimeForInput(data.End_time));
       setOculto(data.Oculto ?? false);
       setVigente(data.Vigente ?? true);
 
@@ -872,12 +873,12 @@ export default function NuevaVotacion() {
             <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
               <div style={{ flex: 1 }}>
                 <Field label="Inicio">
-                  <DateInput value={inicio} onChange={(e) => setInicio(e.target.value)} />
+                  <DateInput type="datetime-local" value={inicio} onChange={(e) => setInicio(e.target.value)} />
                 </Field>
               </div>
               <div style={{ flex: 1 }}>
                 <Field label="Final">
-                  <DateInput value={final} onChange={(e) => setFinal(e.target.value)} />
+                  <DateInput type="datetime-local" value={final} onChange={(e) => setFinal(e.target.value)} />
                 </Field>
               </div>
             </div>
