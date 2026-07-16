@@ -1,105 +1,20 @@
 /**
  * PÁGINA: CONFIGURACIÓN DE VOTACIÓN
- * 
+ *
  * Panel detallado para editar y configurar una votación específica.
  * Acceso exclusivo para administradores.
- * 
+ *
  * Funcionalidades:
  * - Editar nombre y descripción de la votación
  * - Configurar fechas de inicio y fin
  * - Administrar opciones de votación
  * - Activar/desactivar vigencia de la votación
- * - Aplicar estilos personalizados con CSS inyectado
- * 
- * NOTA: Contiene estilos globales inyectados como <style> en el DOM
- * para mantener una estética coherente en todo el panel administrativo
  */
 
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import "../assets/css/AdminSettings.css";
 import GlobalLoader from "../components/GlobalLoader";
-const GLOBAL_CSS = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg: #f7f6f3;
-  --surface: #ffffff;
-  --border: #e2dfd8;
-  --text: #1a1916;
-  --muted: #7a776e;
-  --accent: #6c5ce7;
-  --accent-light: #ede9fc;
-  --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
-}
-
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  background-image:
-    radial-gradient(circle at 80% 10%, rgba(108,92,231,0.06) 0%, transparent 50%),
-    radial-gradient(circle at 20% 80%, rgba(225,112,85,0.05) 0%, transparent 40%);
-}
-
-/* ── Checkbox animado ───────────────────────────────────────────────────────── */
-.custom-checkbox {
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-  font-size: 14px;
-  color: var(--text);
-  transition: color 0.3s;
-}
-.custom-checkbox input[type="checkbox"] {
-  display: none;
-}
-opacity: isSubmitting ? 0.6 : 1,
-cursor: isSubmitting ? "not-allowed" : "pointer",
-pointerEvents: isSubmitting ? "none" : "auto",
-.custom-checkbox .checkmark {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #b0aca3;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-  flex-shrink: 0;
-  transform-style: preserve-3d;
-  transition: background-color 1.3s, border-color 1.3s, color 1.3s, transform 0.3s;
-}
-.custom-checkbox .checkmark::before {
-  content: "\\2713";
-  font-size: 13px;
-  color: transparent;
-  transition: color 0.3s, transform 0.3s;
-}
-.custom-checkbox input[type="checkbox"]:checked + .checkmark {
-  background-color: var(--accent);
-  border-color: var(--accent);
-  transform: scale(1.1) rotateZ(360deg) rotateY(360deg);
-}
-.custom-checkbox input[type="checkbox"]:checked + .checkmark::before {
-  color: #fff;
-}
-.custom-checkbox:hover {
-  color: var(--muted);
-}
-.custom-checkbox:hover .checkmark {
-  border-color: var(--accent);
-  background-color: var(--accent-light);
-  transform: scale(1.05);
-}
-.custom-checkbox input[type="checkbox"]:focus + .checkmark {
-  box-shadow: 0 0 3px 2px rgba(108, 92, 231, 0.25);
-  outline: none;
-}
-`;
 
 // ─── Subcomponentes ──────────────────────────────────────────────────────────
 
@@ -629,13 +544,6 @@ export default function NuevaVotacion() {
         return;
       }
 
-      // const csvPayloads = await Promise.all(
-      //   csvFiles.map(async (item) => ({
-      //     fileName: item.file.name,
-      //     rows: await parseCsvFile(item.file, item.tag)
-      //   }))
-      // );
-
       // Preparar opciones con imágenes comprimidas
       const optionsToSend = await Promise.all(options.map(async (opt) => {
         const imagenes = await Promise.all((opt.imagenes || []).map(async (img) => {
@@ -694,37 +602,7 @@ export default function NuevaVotacion() {
 
       const nombreParaImportar = nombre;
       
-      {/* ////////////// NO FUNCIONA //////////////////*/}
-
-      if (csvFiles.length > 0) {
-         try {
-           const allCsvRows = [];
-           for (const item of csvFiles) {
-             const rows = await parseCsvFile(item.file, item.tag);
-             allCsvRows.push(...rows);
-           }
-
-           if (allCsvRows.length > 0) {
-             const csvRes = await fetch(`/api/voting/${encodeURIComponent(nombreParaImportar)}/import-csv`, {
-               method: "POST",
-               headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ data: allCsvRows })
-             });
-
-             if (!csvRes.ok) {
-               const errorData = await csvRes.json();
-               throw new Error(errorData.error || "Error al subir el contenido del CSV");
-             }
-           }
-         } catch (csvErr) {
-           alert("Votación creada, pero: " + csvErr.message);
-           return; // Detenemos para que el usuario sepa que algo falló
-         }
-      }
-
-      {/* /////////////////////////////////////////////////*/}
-
-      // alert("✓ Todo se guardó correctamente");
+      
 
       alert(isNewVoting ? "✓ Votación creada exitosamente" : "✓ Votación actualizada exitosamente");
 
@@ -821,7 +699,6 @@ export default function NuevaVotacion() {
 
   return (
     <>
-      <style>{GLOBAL_CSS}</style>
       <GlobalLoader
         show={isSubmitting}
         text={
@@ -831,7 +708,7 @@ export default function NuevaVotacion() {
         }
       />
 
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 32px 80px" }}>
+      <div className="admin-settings-page">
 
         {/* Mostrar loader mientras carga */}
         {loading && (
@@ -841,7 +718,7 @@ export default function NuevaVotacion() {
         {!loading && (
           <>
             {/* Título */}
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 600, paddingBottom: 20, borderBottom: "1.5px solid var(--border)", marginBottom: 36, letterSpacing: "-0.3px" }}>
+            <h1 className="admin-settings-title">
               {isNewVoting ? "Nueva Votación" : `Editar: ${nombreOriginal}`}
             </h1>
 
@@ -891,119 +768,13 @@ export default function NuevaVotacion() {
               </div>
 
 
-              {/* CSV */}
-              <div style={{ display: "flex", justifyContent: "flex-start", gap: 12, marginTop: 8 }}>
-                <div style={{ textAlign: "right", maxWidth: 300 }}>
-                  {/* //////////// TODAVIA NO FUNCIONA ////////////////*/}
-
-                  <label style={btnSecondaryStyle}>
-                    Insertar Datos por CSV
-                    <input
-                      type="file"
-                      accept=".csv"
-                      multiple
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files);
-                        const newFiles = files.map((f) => ({ file: f, tag: "" }));
-
-                        setCsvFiles((prev) => [...prev, ...newFiles]);
-
-                        e.target.value = null;
-                      }}
-                      style={{ display: "none" }}
-                    />
-                  </label>
-                  {/* /////////////////////////////////////////////////*/}
-
-                  {/* Lista de archivos */}
-                  {/* //////////// TODAVIA NO FUNCIONA ////////////////*/}
-                  {csvFiles.length > 0 && (
-                    <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
-                      {csvFiles.map((item, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            background: "var(--surface)",
-                            border: "1px solid var(--border)",
-                            borderRadius: 8,
-                            padding: "8px 10px",
-                            boxShadow: "var(--shadow)",
-                            textAlign: "left",
-                            position: "relative",
-                          }}
-                        >
-                          {/* eliminar */}
-                          <button
-                            onClick={() => {
-                               setCsvFiles((prev) => prev.filter((_, idx) => idx !== i));
-                            }}
-                            style={{
-                              position: "absolute",
-                              top: 6,
-                              right: 8,
-                              border: "none",
-                              background: "none",
-                              cursor: "pointer",
-                              fontSize: 14,
-                              color: "var(--muted)",
-                            }}
-                          >
-                            ×
-                          </button>
-
-                          {/* nombre archivo */}
-                          <div style={{ fontSize: 12, marginBottom: 6 }}>
-                            {item.file.name}
-                          </div>
-
-                          {/* tag */}
-                          <select
-                            value={item.tag}
-                            onChange={(e) => {
-                              const updated = [...csvFiles];
-                              updated[i].tag = e.target.value;
-                              setCsvFiles(updated);
-                            }}
-                            style={{
-                              width: "100%",
-                              padding: "6px 8px",
-                              borderRadius: 6,
-                              border: "1px solid var(--border)",
-                              fontSize: 12,
-                              outline: "none",
-                              background: "var(--surface)",
-                              color: item.tag ? "var(--text)" : "var(--muted)",
-                            }}
-                          >
-                            <option value="">Seleccionar grupo...</option>
-                            {TAG_OPTIONS.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* /////////////////////////////////////////////////*/}
-
-                  <p style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
-                    Importar los datos de las personas<br />
-                    legibles para esta votación.<br />
-                    (Esto les permitirá acceder y votar<br />
-                    cuando las votaciones se publiquen)
-                  </p>
-
-                </div>
-              </div>
             </div>
 
             <hr style={{ border: "none", borderTop: "1.5px solid var(--border)", margin: "36px 0" }} />
 
             {/* Visibilidad */}
             <div style={{ marginBottom: 40 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Visibilidad</div>
+              <div className="admin-settings-section-title">Visibilidad</div>
 
               {[
                 { key: "oculto", val: oculto, set: setOculto, title: "Oculto", desc: "No se muestra a nadie que entre a la plataforma, solo tú lo podrás ver y modificar." },
@@ -1023,7 +794,7 @@ export default function NuevaVotacion() {
 
             {/* Opciones */}
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Opciones</div>
+              <div className="admin-settings-section-title">Opciones</div>
 
               {options.map((opt, i) => (
                 <OptionCard
@@ -1038,21 +809,7 @@ export default function NuevaVotacion() {
 
               <button
                 onClick={addOption}
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "10px 20px",
-                  border: "1.5px solid var(--accent)",
-                  borderRadius: 99,
-                  background: "transparent",
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: 13.5, fontWeight: 500,
-                  color: "var(--accent)",
-                  cursor: "pointer",
-                  transition: "background 0.2s, color 0.2s",
-                  marginTop: 8,
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--accent)"; e.currentTarget.style.color = "#fff"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--accent)"; }}
+                className="admin-settings-add-option-button"
               >
                 <svg width={14} height={14} fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
                   <path d="M12 5v14M5 12h14" />
@@ -1065,23 +822,7 @@ export default function NuevaVotacion() {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              style={{
-                display: "block",
-                marginLeft: "auto",
-                marginTop: 32,
-                padding: "12px 36px",
-                border: "none",
-                borderRadius: 99,
-                background: "var(--accent)",
-                color: "#fff",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 14.5, fontWeight: 600,
-                cursor: "pointer",
-                boxShadow: "0 4px 18px rgba(108,92,231,0.25)",
-                transition: "transform 0.15s, box-shadow 0.15s",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(108,92,231,0.35)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(108,92,231,0.25)"; }}
+              className="admin-settings-submit-button"
             >
               {isNewVoting ? "Crear Votación" : "Guardar Cambios"}
             </button>
@@ -1091,31 +832,7 @@ export default function NuevaVotacion() {
               <button
                 onClick={handleDeleteVoting}
                 disabled={isSubmitting}
-                style={{
-                  display: "block",
-                  marginLeft: "auto",
-                  marginTop: 12,
-                  padding: "12px 36px",
-                  border: "1.5px solid #e74c3c",
-                  borderRadius: 99,
-                  background: "transparent",
-                  color: "#e74c3c",
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: 14.5,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "transform 0.15s, background 0.2s, color 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e74c3c";
-                  e.currentTarget.style.color = "#fff";
-                  e.currentTarget.style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "#e74c3c";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}
+                className="admin-settings-delete-button"
               >
                 🗑️ Eliminar Votación
               </button>

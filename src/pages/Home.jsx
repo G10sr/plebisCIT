@@ -78,20 +78,18 @@ function Home() {
         >
 
             {/* Modal - */}
-            <div style={styles.overlay}>
-                <div
-                    style={styles.modal}
-                >
+            <div className="home-overlay">
+                <div className="home-modal">
 
                     <h2>
                         ¡Bienvenido a{" "}
-                        <span style={{ color: "#3658FA" }}>Pl</span>
-                        <span style={{ color: "#b9b9b9" }}>eb</span>
-                        <span style={{ color: "#ff0000" }}>i</span>
-                        <span style={{ color: "#b9b9b9" }}>sC</span>
-                        <span style={{ color: "#3658FA" }}>IT</span>!
+                        <span className="brand-blue">Pl</span>
+                        <span className="brand-gray">eb</span>
+                        <span className="brand-red">i</span>
+                        <span className="brand-gray">sC</span>
+                        <span className="brand-blue">IT</span>!
                     </h2>
-                    <form onSubmit={handleStart} style={{ width: "100%" }}>
+                    <form onSubmit={handleStart}>
                         <div id="idSpace">
                             <p>Ingresa tu identificación:</p>
                             <input
@@ -124,34 +122,5 @@ function Home() {
     );
 
 }
-
-const styles = {
-    overlay: {
-        position: "relative",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    modal: {
-        background: "#fff",
-        padding: "20px",
-        borderRadius: "20px",
-        minWidth: "350px",
-        width: "23vw",
-        position: "relative",
-        border: "2px solid #b4b4b4",
-        display: "flex",              // 👈 importante
-        flexDirection: "column",      // vertical
-        justifyContent: "center",     // centra verticalmente
-        alignItems: "center",         // centra horizontalmente
-        textAlign: "center",           // centra el texto
-        zIndex: "10"
-    }
-};
 
 export default Home;

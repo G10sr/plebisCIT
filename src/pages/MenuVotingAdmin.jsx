@@ -2,14 +2,20 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import GlobalLoader from "../components/GlobalLoader";
 import "../assets/css/MenuVoting.css";
+import "../assets/css/MenuVotingAdmin.css";
 import VoteListAdmin from "../components/VoteListAdmin";
 
 /**
  * PÁGINA: MENÚ DE VOTACIONES - ADMINISTRADOR
  */
 function MenuVotingAdmin() {
+    const CorrectValue = "1234"; 
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = React.useState(true); // si lo necesitas
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [isCsvModalOpen, setIsCsvModalOpen] = React.useState(false);
+    const [csvFiles, setCsvFiles] = React.useState([]);
+    const [password, setPassword] = React.useState("");
+    const [isPasswordCorrect, setIsPasswordCorrect] = React.useState(false);
 
     React.useEffect(() => {
         const adminUUID = localStorage.getItem("adminUUID");
@@ -35,32 +41,10 @@ function MenuVotingAdmin() {
             <hr />
 
             {/* Header de acciones del admin */}
-            <div style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                marginBottom: 12,
-                marginRight:"10vw"
-            }}>
+            <div className="menu-voting-admin__header">
                 <button
+                    className="menu-voting-admin__button"
                     onClick={() => navigate("/adminsettings/new")}
-                    style={{
-                        background: "transparent",
-                        border: "1px solid #ddd",
-                        padding: "6px 12px",
-                        borderRadius: 8,
-                        fontSize: 12.5,
-                        color: "#7a776e",
-                        cursor: "pointer",
-                        transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = "#6c5ce7";
-                        e.currentTarget.style.color = "#6c5ce7";
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = "#ddd";
-                        e.currentTarget.style.color = "#7a776e";
-                    }}
                 >
                     + Crear votación
                 </button>
@@ -69,6 +53,89 @@ function MenuVotingAdmin() {
             <div className="VotingList">
                 <VoteListAdmin />
             </div>
+                <div>
+
+                </div>
+                <div className="menu-voting-admin__csv-controls">
+                    <input
+                        type="password"
+                        placeholder="Contraseña"
+                        value={password}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            setPassword(value);
+                            setIsPasswordCorrect(value === CorrectValue);
+                        }}
+                        className="menu-voting-admin__password-input"
+                    />
+                    <button
+                        onClick={() => {
+                            if (password === CorrectValue) {
+                                setIsCsvModalOpen(true);
+                            }
+                        }}
+                        disabled={!isPasswordCorrect}
+                        className={`menu-voting-admin__csv-button${isPasswordCorrect ? "" : " menu-voting-admin__csv-button--disabled"}`}
+                    >
+                        Admin CSV
+                    </button>
+                </div>
+
+            {isCsvModalOpen && (
+                <div
+                    id="admin-CSV"
+                    className="menu-voting-admin__modal-overlay"
+                    onClick={() => setIsCsvModalOpen(false)}
+                >
+                    <div
+                        className="menu-voting-admin__modal-panel"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="menu-voting-admin__close-button"
+                            onClick={() => setIsCsvModalOpen(false)}
+                            aria-label="Cerrar popup"
+                        >
+                            ×
+                        </button>
+
+                        <h3 className="menu-voting-admin__title">Importar CSV</h3>
+                        <p className="menu-voting-admin__description">
+                            Sube varios archivos CSV y elimínalos si lo necesitas antes de guardarlos.
+                        </p>
+
+                        <label className="menu-voting-admin__upload-label">
+                            Seleccionar archivos CSV
+                            <input
+                                type="file"
+                                accept=".csv"
+                                multiple
+                                onChange={(e) => {
+                                    const files = Array.from(e.target.files || []);
+                                    setCsvFiles((prev) => [...prev, ...files.map((file) => ({ id: `${file.name}-${file.lastModified}`, file }))]);
+                                    e.target.value = "";
+                                }}
+                            />
+                        </label>
+
+                        {csvFiles.length > 0 && (
+                            <div className="menu-voting-admin__file-list">
+                                {csvFiles.map((item) => (
+                                    <div key={item.id} className="menu-voting-admin__file-item">
+                                        <span className="menu-voting-admin__file-name">{item.file.name}</span>
+                                        <button
+                                            className="menu-voting-admin__csv-delete-button"
+                                            onClick={() => setCsvFiles((prev) => prev.filter((csv) => csv.id !== item.id))}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </section>
     );
 }

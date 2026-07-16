@@ -72,3 +72,47 @@
   color: #ffffff;
 
 }
+
+.home-overlay {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-modal {
+  background: #fff;
+  padding: 20px;
+  border-radius: 20px;
+  min-width: 350px;
+  width: 23vw;
+  position: relative;
+  border: 2px solid #b4b4b4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 10;
+}
+
+.home-modal form {
+  width: 100%;
+}
+
+.brand-blue {
+  color: #3658FA;
+}
+
+.brand-gray {
+  color: #b9b9b9;
+}
+
+.brand-red {
+  color: #ff0000;
+}

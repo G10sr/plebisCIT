@@ -79,20 +79,18 @@ function Admin() {
         >
 
             {/* Modal - */}
-            <div style={styles.overlay}>
-                <div
-                    style={styles.modal}
-                >
+            <div className="admin-overlay">
+                <div className="admin-modal">
 
                     <h2>
                         Modo {" "}
-                        <span style={{ color: "#3658FA" }}>Adm</span>
-                        <span style={{ color: "#b9b9b9" }}>ini</span>
-                        <span style={{ color: "#ff0000" }}>st</span>
-                        <span style={{ color: "#b9b9b9" }}>rat</span>
-                        <span style={{ color: "#3658FA" }}>ivo</span>
+                        <span className="admin-brand-blue">Adm</span>
+                        <span className="admin-brand-gray">ini</span>
+                        <span className="admin-brand-red">st</span>
+                        <span className="admin-brand-gray">rat</span>
+                        <span className="admin-brand-blue">ivo</span>
                     </h2>
-                    <form onSubmit={handleStart} style={{ width: "100%" }}>
+                    <form onSubmit={handleStart}>
                         <div id="idSpace">
                             <p>Ingresa el correo:</p>
                             <input
@@ -122,32 +120,4 @@ function Admin() {
 
 }
 
-const styles = {
-    overlay: {
-        position: "relative",
-        top: 0,
-        left: 0,
-        width: "100dvw",
-        height: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    modal: {
-        background: "#fff",
-        padding: "20px",
-        borderRadius: "20px",
-        minWidth: "350px",
-        width: "23vw",
-        position: "relative",
-        border: "2px solid #b4b4b4",
-        display: "flex",              // 👈 importante
-        flexDirection: "column",      // vertical
-        justifyContent: "center",     // centra verticalmente
-        alignItems: "center",         // centra horizontalmente
-        textAlign: "center",           // centra el texto
-        zIndex: "10"
-    }
-};
 export default Admin;

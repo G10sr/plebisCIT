@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "../assets/css/PartidoCard.css";
 
 /**
  * COMPONENTE: TARJETA DE OPCIÓN
@@ -15,47 +16,40 @@ function PartidoCard({ partido, onClick, seleccionado }) {
   return (
     <div
       onClick={onClick}
+      className={`partido-card${esNulo ? " partido-card--nulo" : ""}`}
       style={{
-        ...styles.card,
-
         border: seleccionado
           ? `7px solid ${partido.color || "#2f80ed"}`
           : esNulo
             ? "3px dashed #4d4d4d"
             : "2px solid rgb(180, 180, 180)",
-
-        backgroundColor: esNulo ? "#adadad" : "#fff",
-
-        ...(esNulo && styles.nullCard),
       }}
     >
 
       {esNulo ? (
 
-        <h2 style={styles.nullText}>
+        <h2 className="partido-card__null-text">
           Voto nulo
         </h2>
 
       ) : (
 
-        <div style={styles.content}>
+        <div className="partido-card__content">
 
-          <div style={styles.textContainer}>
-            <h3 style={styles.title}>
+          <div className="partido-card__text-container">
+            <h3 className="partido-card__title">
               {partido.nombre}
             </h3>
 
-            <p style={styles.description}>
+            <p className="partido-card__description">
               {partido.descripcionCorta}
             </p>
           </div>
 
 
           <div
+            className="partido-card__image-container"
             style={{
-              ...styles.imageContainer,
-
-              // Solo el carrusel/espacio de imagen usa el color
               backgroundColor:
                 !tieneImagen || imagenFallida
                   ? partido.color || "#9ecbff"
@@ -68,7 +62,7 @@ function PartidoCard({ partido, onClick, seleccionado }) {
               <img
                 src={partido.imagenes[0]}
                 alt={partido.nombre}
-                style={styles.image}
+                className="partido-card__image"
                 onError={() => setImagenFallida(true)}
               />
 
@@ -83,74 +77,5 @@ function PartidoCard({ partido, onClick, seleccionado }) {
     </div>
   );
 }
-
-
-const styles = {
-
-  card: {
-    borderRadius: 16,
-    overflow: "hidden",
-    width: "100%",
-    height: 240,
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-  },
-
-
-  nullCard: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-
-  nullText: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: "#ffffff",
-    textAlign: "center",
-  },
-
-
-  content: {
-    display: "flex",
-    height: "100%",
-  },
-
-
-  textContainer: {
-    flex: 1.5,
-    padding: 20,
-  },
-
-
-  title: {
-    fontSize: 20,
-    marginBottom: 8,
-  },
-
-
-  description: {
-    fontSize: 16,
-    lineHeight: 1.4,
-  },
-
-
-  imageContainer: {
-    flex: 1.5,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-
-  image: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-  },
-
-};
-
 
 export default PartidoCard;
