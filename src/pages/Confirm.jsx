@@ -45,7 +45,7 @@ function Confirm() {
 
     return (
         <section //Creacion del fondo
-            className="fondo-container"
+            className="fondo-container confirm-section"
             style={{ backgroundImage: `linear-gradient(rgba(2, 0, 126, 0.07), rgba(0, 0, 0, 0)),url(${img})` }}
         >
             <div className="confirm-container">

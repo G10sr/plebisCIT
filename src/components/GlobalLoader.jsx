@@ -6,28 +6,10 @@ export default function GlobalLoader({ show, text = "Procesando..." }) {
 /* Formatos generales */
   
   return (
-    <div style={{
-      position: "fixed",
-      inset: 0,
-      background: "rgba(0,0,0,0.35)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 9999,
-      backdropFilter: "blur(4px)"
-    }}>
-      <div style={{
-        background: "white",
-        padding: "24px 28px",
-        borderRadius: 12,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 12,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.2)"
-      }}>
+    <div className="global-loader-overlay">
+      <div className="global-loader-card">
         <div className="spinner" />
-        <div style={{ fontSize: 14, color: "#333" }}>{text}</div>
+        <div className="global-loader-text">{text}</div>
       </div>
 
       <style>{`

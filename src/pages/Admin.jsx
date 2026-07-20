@@ -79,20 +79,18 @@ function Admin() {
         >
 
             {/* Modal - */}
-            <div style={styles.overlay}>
-                <div
-                    style={styles.modal}
-                >
+            <div className="admin-overlay">
+                <div className="admin-modal">
 
                     <h2>
                         Modo {" "}
-                        <span style={{ color: "#3658FA" }}>Adm</span>
-                        <span style={{ color: "#b9b9b9" }}>ini</span>
-                        <span style={{ color: "#ff0000" }}>st</span>
-                        <span style={{ color: "#b9b9b9" }}>rat</span>
-                        <span style={{ color: "#3658FA" }}>ivo</span>
+                        <span className="admin-brand-blue">Adm</span>
+                        <span className="admin-brand-gray">ini</span>
+                        <span className="admin-brand-red">st</span>
+                        <span className="admin-brand-gray">rat</span>
+                        <span className="admin-brand-blue">ivo</span>
                     </h2>
-                    <form onSubmit={handleStart} style={{ width: "100%" }}>
+                    <form onSubmit={handleStart}>
                         <div id="idSpace">
                             <p>Ingresa el correo:</p>
                             <input
@@ -134,7 +132,7 @@ const styles = {
         justifyContent: "center",
         alignItems: "center",
     },
-    modal: { /* El modal en donde se encuentran los textos de inicio de sesión. */
+    modal: {
         background: "#fff",
         padding: "20px",
         borderRadius: "20px",

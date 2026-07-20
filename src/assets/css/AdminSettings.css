@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --border: #e2dfd8;
+  --text: #1a1916;
+  --muted: #7a776e;
+  --accent: #6c5ce7;
+  --accent-light: #ede9fc;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 80% 10%, rgba(108, 92, 231, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(225, 112, 85, 0.05) 0%, transparent 40%);
+}
+
+.admin-settings-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+}
+
+.admin-settings-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  padding-bottom: 20px;
+  border-bottom: 1.5px solid var(--border);
+  margin-bottom: 36px;
+  letter-spacing: -0.3px;
+}
+
+.admin-settings-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.admin-settings-divider {
+  border: none;
+  border-top: 1.5px solid var(--border);
+  margin: 36px 0;
+}
+
+.admin-settings-add-option-button,
+.admin-settings-submit-button,
+.admin-settings-delete-button {
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.2s, color 0.2s;
+}
+
+.admin-settings-add-option-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1.5px solid var(--accent);
+  border-radius: 99px;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--accent);
+  margin-top: 8px;
+}
+
+.admin-settings-add-option-button:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.admin-settings-submit-button {
+  display: block;
+  margin-left: auto;
+  margin-top: 32px;
+  padding: 12px 36px;
+  border: none;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 600;
+  box-shadow: 0 4px 18px rgba(108, 92, 231, 0.25);
+}
+
+.admin-settings-submit-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(108, 92, 231, 0.35);
+}
+
+.admin-settings-delete-button {
+  display: block;
+  margin-left: auto;
+  margin-top: 12px;
+  padding: 12px 36px;
+  border: 1.5px solid #e74c3c;
+  border-radius: 99px;
+  background: transparent;
+  color: #e74c3c;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.admin-settings-delete-button:hover {
+  background: #e74c3c;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.custom-checkbox {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  color: var(--text);
+  transition: color 0.3s;
+}
+
+.custom-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.custom-checkbox .checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #b0aca3;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+  transform-style: preserve-3d;
+  transition: background-color 1.3s, border-color 1.3s, color 1.3s, transform 0.3s;
+}
+
+.custom-checkbox .checkmark::before {
+  content: "✓";
+  font-size: 13px;
+  color: transparent;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1) rotateZ(360deg) rotateY(360deg);
+}
+
+.custom-checkbox input[type="checkbox"]:checked + .checkmark::before {
+  color: #fff;
+}
+
+.custom-checkbox:hover {
+  color: var(--muted);
+}
+
+.custom-checkbox:hover .checkmark {
+  border-color: var(--accent);
+  background-color: var(--accent-light);
+  transform: scale(1.05);
+}
+
+.custom-checkbox input[type="checkbox"]:focus + .checkmark {
+  box-shadow: 0 0 3px 2px rgba(108, 92, 231, 0.25);
+  outline: none;
+}

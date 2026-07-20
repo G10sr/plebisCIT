@@ -33,3 +33,9 @@
   font-size: 2rem;
   color: #d32f2f;
 }
+
+.confirm-section {
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+}

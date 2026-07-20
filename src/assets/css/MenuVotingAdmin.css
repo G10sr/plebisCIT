@@ -1,0 +1,148 @@
+.menu-voting-admin__header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 12px;
+  margin-right: 10vw;
+}
+
+.menu-voting-admin__button,
+.menu-voting-admin__csv-button,
+.menu-voting-admin__upload-label {
+  background: transparent;
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: #7a776e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.menu-voting-admin__button:hover,
+.menu-voting-admin__csv-button:hover:not(:disabled),
+.menu-voting-admin__upload-label:hover {
+  border-color: #6c5ce7;
+  color: #6c5ce7;
+}
+
+.menu-voting-admin__csv-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-left: 10vw;
+  margin-bottom: 20px;
+}
+
+.menu-voting-admin__password-input {
+  width: 140px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+}
+
+.menu-voting-admin__csv-button {
+  max-width: fit-content;
+}
+
+.menu-voting-admin__csv-button--disabled {
+  background: #f2f2f2;
+  color: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.menu-voting-admin__csv-button--disabled:hover {
+  border-color: #ddd;
+  color: #b0b0b0;
+}
+
+.menu-voting-admin__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 40, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.menu-voting-admin__modal-panel {
+  background: #fff;
+  width: 100%;
+  max-width: 700px;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.menu-voting-admin__close-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  color: #7a776e;
+}
+
+.menu-voting-admin__title {
+  margin-bottom: 8px;
+  color: #1a1916;
+}
+
+.menu-voting-admin__description {
+  margin-bottom: 16px;
+  color: #7a776e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.menu-voting-admin__upload-label {
+  display: inline-block;
+  padding: 10px 14px;
+  color: #6c5ce7;
+  font-weight: 600;
+}
+
+.menu-voting-admin__upload-label input {
+  display: none;
+}
+
+.menu-voting-admin__file-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.menu-voting-admin__file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fafafa;
+}
+
+.menu-voting-admin__file-name {
+  font-size: 13px;
+  color: #1a1916;
+}
+
+.menu-voting-admin__csv-delete-button {
+  border: none;
+  background: transparent;
+  color: #c0392b;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}

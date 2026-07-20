@@ -18,11 +18,11 @@ import "./App.css";
 function App() {
   return (
     <BrowserRouter>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <div className="app-shell">
 
         <Header />
 
-        <div style={{ flex: 1 }}>
+        <div className="app-main">
           <Routes>
 
             <Route path="/" element={<Home />} />

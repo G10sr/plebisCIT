@@ -78,20 +78,18 @@ function Home() {
         >
 
             {/* Modal - */}
-            <div style={styles.overlay}>
-                <div
-                    style={styles.modal}
-                >
+            <div className="home-overlay">
+                <div className="home-modal">
 
                     <h2>
                         ¡Bienvenido a{" "}
-                        <span style={{ color: "#3658FA" }}>Pl</span>
-                        <span style={{ color: "#b9b9b9" }}>eb</span>
-                        <span style={{ color: "#ff0000" }}>i</span>
-                        <span style={{ color: "#b9b9b9" }}>sC</span>
-                        <span style={{ color: "#3658FA" }}>IT</span>!
+                        <span className="brand-blue">Pl</span>
+                        <span className="brand-gray">eb</span>
+                        <span className="brand-red">i</span>
+                        <span className="brand-gray">sC</span>
+                        <span className="brand-blue">IT</span>!
                     </h2>
-                    <form onSubmit={handleStart} style={{ width: "100%" }}>
+                    <form onSubmit={handleStart}>
                         <div id="idSpace">
                             <p>Ingresa tu identificación:</p>
                             <input
@@ -125,6 +123,7 @@ function Home() {
 
 }
 
+<<<<<<< HEAD
 const styles = {
     overlay: {
         position: "relative",
@@ -154,4 +153,6 @@ const styles = {
     }
 };
 
+=======
+>>>>>>> 24c23e2c0cf74f3588589aba4770e0ffdac0cab6
 export default Home;
