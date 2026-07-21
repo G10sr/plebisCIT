@@ -101,7 +101,7 @@ function MenuVotingAdmin() {
 
                         <h3 className="menu-voting-admin__title">Importar CSV</h3>
                         <p className="menu-voting-admin__description">
-                            Sube varios archivos CSV y elimínalos si lo necesitas antes de guardarlos.
+                            Sube varios archivos CSV y elimínalos si lo necesitas antes de guardarlos. Asegurate que los archivos tengan exactamente los campos Número de Identificación, Seccion, Nombre, Primer Apellido, Segundo Apellido.
                         </p>
 
                         <label className="menu-voting-admin__upload-label">

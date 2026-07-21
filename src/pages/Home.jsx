@@ -123,36 +123,4 @@ function Home() {
 
 }
 
-<<<<<<< HEAD
-const styles = {
-    overlay: {
-        position: "relative",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    modal: { /* El modal en donde se encuentran los textos de inicio de sesión. */
-        background: "#fff",
-        padding: "20px",
-        borderRadius: "20px",
-        minWidth: "350px",
-        width: "23vw",
-        position: "relative",
-        border: "2px solid #b4b4b4",
-        display: "flex",              // 👈 importante
-        flexDirection: "column",      // vertical
-        justifyContent: "center",     // centra verticalmente
-        alignItems: "center",         // centra horizontalmente
-        textAlign: "center",           // centra el texto
-        zIndex: "10"
-    }
-};
-
-=======
->>>>>>> 24c23e2c0cf74f3588589aba4770e0ffdac0cab6
 export default Home;
