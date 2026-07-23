@@ -117,10 +117,26 @@
   margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   scroll-behavior: smooth;
   max-height: 300px;
   overflow-y: auto;
+}
+
+.menu-voting-admin__group-section {
+  border: 1px solid #ece8ff;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fcfbff;
+}
+
+.menu-voting-admin__group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6c5ce7;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .menu-voting-admin__file-item {
