@@ -120,9 +120,12 @@ body {
   transform: translateY(-1px);
 }
 
+
 .custom-checkbox {
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  gap: 12px;
   cursor: pointer;
   user-select: none;
   font-size: 14px;
@@ -142,7 +145,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 10px;
   flex-shrink: 0;
   transform-style: preserve-3d;
   transition: background-color 1.3s, border-color 1.3s, color 1.3s, transform 0.3s;

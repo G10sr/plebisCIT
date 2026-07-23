@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import postgres from "postgres";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
 import "dotenv/config";
 
 const sql = postgres(process.env.DATABASE_URL);
@@ -9,6 +12,38 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: true }));
+
+const uploadDir = path.join(process.cwd(), "uploads");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, "_");
+    const fileName = `${base}${ext}`;
+    const filePath = path.join(uploadDir, fileName);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    cb(null, fileName);
+  }
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (path.extname(file.originalname).toLowerCase() !== ".csv") {
+      return cb(new Error("Solo se permiten archivos CSV"));
+    }
+    cb(null, true);
+  }
+});
 
 /* ─────────────────────────────────────────────
    UTIL
@@ -21,6 +56,138 @@ function formatTableName(name) {
     .replace(/\s+/g, "_")
     .replace(/[^a-zA-Z0-9_]/g, "");
 }
+
+app.post("/subir", (req, res) => {
+  upload.single("archivo_csv")(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || "Error subiendo el archivo" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No se recibió ningún archivo." });
+    }
+
+    res.json({
+      success: true,
+      file: req.file.filename,
+      path: req.file.path,
+      size: req.file.size
+    });
+  });
+});
+
+app.get("/subir", (req, res) => {
+  try {
+    const files = fs.readdirSync(uploadDir)
+      .filter((name) => name.toLowerCase().endsWith(".csv"))
+      .map((name) => ({
+        name,
+        size: fs.statSync(path.join(uploadDir, name)).size,
+        createdAt: fs.statSync(path.join(uploadDir, name)).ctime.toISOString()
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    res.json({ files });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message || "Error listando archivos" });
+  }
+});
+
+app.delete("/subir/:filename", (req, res) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(uploadDir, filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "Archivo no encontrado" });
+    }
+
+    fs.unlinkSync(filePath);
+
+    res.json({ success: true, deleted: filename });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message || "Error eliminando archivo" });
+  }
+});
+
+app.get("/api/csv-sections", async (req, res) => {
+  try {
+
+    const files = fs.readdirSync(uploadDir)
+      .filter(file => file.toLowerCase().endsWith(".csv"));
+
+
+    const sections = new Set();
+
+
+    for (const file of files) {
+
+      const filePath = path.join(uploadDir, file);
+
+      const content = fs.readFileSync(filePath, "utf8");
+
+
+      const lines = content
+        .split(/\r?\n/)
+        .filter(Boolean);
+
+
+      if (!lines.length) continue;
+
+
+      let delimiter = ",";
+
+      if (lines[0].includes(";")) delimiter = ";";
+      else if (lines[0].includes("\t")) delimiter = "\t";
+
+
+      const headers = lines[0]
+        .split(delimiter)
+        .map(h => h.trim());
+
+
+      const sectionIndex = headers.findIndex(
+        h => h.toLowerCase() === "seccion"
+      );
+
+
+      if (sectionIndex === -1) continue;
+
+
+      lines.slice(1).forEach(line => {
+
+        const values = line.split(delimiter);
+
+        const section = values[sectionIndex]?.trim();
+
+
+        if (section) {
+          sections.add(section);
+        }
+
+      });
+
+    }
+
+
+    res.json({
+      sections: Array.from(sections).sort()
+    });
+
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      error: "Error obteniendo secciones CSV"
+    });
+
+  }
+});
+
 
 /* ─────────────────────────────────────────────
    LOGIN ADMIN
@@ -531,37 +698,6 @@ app.put("/api/voting/update/:name", async (req, res) => {
    IMPORT CSV
 ───────────────────────────────────────────── */
 
-app.post("/api/voting/:name/import-csv", async (req, res) => {
-  try {
-    const { name } = req.params;
-    // Cambiamos 'files' por 'data', que es lo que envías desde el front
-    const rows = req.body.data || [];
-
-    const table = `Vote_${formatTableName(name)}_Data`;
-    let inserted = 0;
-
-    // Ya no necesitas el doble bucle, solo uno para las filas
-    for (const row of rows) {
-      const ced = (row.ced || row.cedula || row.id || "").toString().trim();
-      const nombre = (row.nombre || row.name || "").toString().trim();
-      const grado = (row.grado || row.grade || "").toString().trim();
-
-      if (!ced || !nombre) continue;
-
-      await sql`
-        INSERT INTO ${sql(table)} (ced, nombre, grado, hasvoted)
-        VALUES (${ced}, ${nombre}, ${grado || null}, false)
-        ON CONFLICT (ced) DO NOTHING
-      `;
-      inserted++;
-    }
-
-    res.json({ success: true, inserted });
-  } catch (err) {
-    console.error("CSV ERROR:", err);
-    res.status(500).json({ error: "Error CSV upload", details: err.message });
-  }
-});
 
 app.delete("/api/voting/:name/option/:id", async (req, res) => {
   try {

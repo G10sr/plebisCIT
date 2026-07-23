@@ -355,14 +355,8 @@ const btnSecondaryStyle = {
 };
 
 // ─── Grupos de personas a votar ──────────────────────────────────────────────
-const GRUPOS = [
-  ["Externos", "11°"],
-  ["Profesores", "12°"],
-  ["7°", "Todo el complejo educativo"],
-  ["8°", "Solo estudiantes"],
-  ["9°", "Cualquier persona"],
-  ["10°", null],
-];
+
+
 
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function NuevaVotacion() {
@@ -383,18 +377,24 @@ export default function NuevaVotacion() {
     { nombre: "", descripcion: "", imagenes: [], color: "#6c5ce7" },
   ]);
   const [nombreOriginal, setNombreOriginal] = useState("");
+  const [csvSections, setCsvSections] = useState([]);
 
-  const TAG_OPTIONS = [
-    "7°",
-    "8°",
-    "9°",
-    "10°",
-    "11°",
-    "12°",
-    "Profesores",
-    "Todos",
-    "No definido",
-  ];
+useEffect(() => {
+  const loadSections = async () => {
+
+    try {
+
+      const res = await fetch("/api/csv-sections");
+      const data = await res.json();
+      setCsvSections(data.sections || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  loadSections();
+
+}, []);
+
 
   // ─── Cargar datos si es edición ───────────────────────────────────────
   useEffect(() => {
@@ -479,43 +479,43 @@ export default function NuevaVotacion() {
   const removeOption = (index) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
 
-   const parseCsvFile = async (file, defaultGroup = "") => {
-     const text = await file.text();
+  const parseCsvFile = async (file, defaultGroup = "") => {
+    const text = await file.text();
 
-     const lines = text
-       .split(/\r?\n/)
-       .map(l => l.trim())
-       .filter(Boolean);
+    const lines = text
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean);
 
-     if (!lines.length) return [];
+    if (!lines.length) return [];
 
-     const headerLine = lines[0];
+    const headerLine = lines[0];
 
-     // detectar separador real
-     let delimiter = ",";
-     if (headerLine.includes(";")) delimiter = ";";
-     else if (headerLine.includes("\t")) delimiter = "\t";
+    // detectar separador real
+    let delimiter = ",";
+    if (headerLine.includes(";")) delimiter = ";";
+    else if (headerLine.includes("\t")) delimiter = "\t";
 
-     const headers = headerLine
-       .split(delimiter)
-       .map(h => h.trim().toLowerCase());
+    const headers = headerLine
+      .split(delimiter)
+      .map(h => h.trim().toLowerCase());
 
-     return lines.slice(1).map(line => {
-       const values = line.split(delimiter).map(v => v.trim());
+    return lines.slice(1).map(line => {
+      const values = line.split(delimiter).map(v => v.trim());
 
-       const row = {};
+      const row = {};
 
-       headers.forEach((h, i) => {
-         row[h] = values[i];
-       });
+      headers.forEach((h, i) => {
+        row[h] = values[i];
+      });
 
-       return {
-         ced: row.ced || row.cedula || row.id || "",
-         nombre: row.nombre || row.name || "",
-         grado: row.grado || row.grade || defaultGroup || "",
-       };
-     }).filter(r => r.ced && r.nombre);
-   };
+      return {
+        ced: row.ced || row.cedula || row.id || "",
+        nombre: row.nombre || row.name || "",
+        grado: row.grado || row.grade || defaultGroup || "",
+      };
+    }).filter(r => r.ced && r.nombre);
+  };
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
@@ -601,8 +601,8 @@ export default function NuevaVotacion() {
       }
 
       const nombreParaImportar = nombre;
-      
-      
+
+
 
       alert(isNewVoting ? "✓ Votación creada exitosamente" : "✓ Votación actualizada exitosamente");
 
@@ -761,14 +761,28 @@ export default function NuevaVotacion() {
             </div>
 
             {/* Personas a votar */}
-            <div style={{ marginBottom: 40 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <span style={{ fontSize: 15, fontWeight: 600 }}>Personas a votar</span>
-                <span style={{ fontSize: 12, color: "var(--botonesHover)" }}>ESTA AREA ESTARA DISPONIBLE PROXIMAMENETE</span>
-              </div>
-
-
+            <div style={{ marginBottom: 40, display: "flex", flexDirection: "column", gap: 22 }}>
+              <h3>
+                Personas a votar
+              </h3>
+              {
+                csvSections.length === 0 ? (
+                  <p>
+                    No hay secciones disponibles.
+                  </p>
+                ) : (
+                  csvSections.map(section => (
+                    <CustomCheckbox
+                      key={section}
+                      label={section}
+                      checked={grupos[section] || false}
+                      onChange={() => toggleGrupo(section)}
+                    />
+                  ))
+                )
+              }
             </div>
+
 
             <hr style={{ border: "none", borderTop: "1.5px solid var(--border)", margin: "36px 0" }} />
 
