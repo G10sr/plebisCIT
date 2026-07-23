@@ -17,26 +17,30 @@ import GlobalLoader from "../components/GlobalLoader";
 function Vote() {
     // Estado del partido seleccionado por el usuario
     const [partidoSeleccionado, setPartidoSeleccionado] = useState(null);
-    
+
     // Estado del partido en el que se abrió el modal
     const [partidoActivo, setPartidoActivo] = useState(null);
-    
+
     // Estado de confirmación del voto (checkbox)
     const [confirmado, setConfirmado] = useState(false);
-    
+
     // Detectar si es pantalla móvil (< 768px)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    
+
     // Lista de opciones de votación transformadas
     const [partidos, setPartidos] = useState([]);
-    
+
     // Estados de carga
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
-    
+
     // ID del voto nulo (obtenido de la BD)
     const [votoNuloId, setVotoNuloId] = useState(null);
-    
+
+    // Separar voto nulo del resto
+    const votoNulo = partidos.find(p => p.id === 0);
+    const partidosNormales = partidos.filter(p => p.id !== 0);
+
     // Estado para controlar el envío del voto
     const [enviandoVoto, setEnviandoVoto] = useState(false);
 
@@ -137,49 +141,54 @@ function Vote() {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
-                paddingBottom: "60px",
             }}
         >
             {/* Grid de opciones de votación */}
             <div style={styles.overlay}>
-                <div style={{
-                    ...styles.grid,
-                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-                    width: isMobile ? "90%" : "900px"
-                }}>
-                    {partidos.map((p) => (
-                        <div key={p.id}>
-                            {/* Tarjeta visual de cada opción */}
-                            <PartidoCard
-                                partido={p}
-                                seleccionado={partidoSeleccionado === p.id}
-                                onClick={() => {
-                                    if (p.id === 0) {
-                                        // Voto nulo: seleccionar directamente
-                                        setPartidoSeleccionado(0);
-                                        setPartidoActivo(null);
-                                        setConfirmado(false);
-                                    } else {
-                                        // Otros votos: abrir modal
-                                        setPartidoActivo(p.id);
-                                    }
-                                }}
-                            />
+                <div style={styles.containerOpciones}>
 
-                            {/* Modal de confirmación de selección */}
-                            {partidoActivo === p.id && (
-                                <PartidoModal
+                    {/* Fila horizontal de partidos */}
+                    <div className="filaPartidos" style={styles.filaPartidos}>
+                        {partidosNormales.map((p) => (
+                            <div key={p.id} style={styles.cardWrapper}>
+                                <PartidoCard
                                     partido={p}
-                                    onClose={() => setPartidoActivo(null)}
-                                    onSelect={() => {
-                                        setPartidoSeleccionado(p.id);
-                                        setPartidoActivo(null);
-                                        setConfirmado(false);
+                                    seleccionado={partidoSeleccionado === p.id}
+                                    onClick={() => {
+                                        setPartidoActivo(p.id);
                                     }}
                                 />
-                            )}
+
+                                {partidoActivo === p.id && (
+                                    <PartidoModal
+                                        partido={p}
+                                        onClose={() => setPartidoActivo(null)}
+                                        onSelect={() => {
+                                            setPartidoSeleccionado(p.id);
+                                            setPartidoActivo(null);
+                                            setConfirmado(false);
+                                        }}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Tarjeta de Voto Nulo */}
+                    {votoNulo && (
+                        <div style={styles.nuloContainer}>
+                            <PartidoCard
+                                partido={votoNulo}
+                                seleccionado={partidoSeleccionado === 0}
+                                onClick={() => {
+                                    setPartidoSeleccionado(0);
+                                    setPartidoActivo(null);
+                                    setConfirmado(false);
+                                }}
+                            />
                         </div>
-                    ))}
+                    )}
+
                 </div>
             </div>
 
@@ -270,16 +279,46 @@ const styles = {
         justifyContent: "center",
     },
 
-    grid: {
-        display: "grid",
-        gap: 24,
+    containerOpciones: {
+        width: "95%",
+        maxWidth: "1400px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "25px",
+    },
+
+    filaPartidos: {
+    display: "flex",
+    gap: "20px",
+    overflowX: "auto",
+    overflowY: "hidden",
+    paddingBottom: "6px",
+    scrollBehavior: "smooth",
+
+    /* Firefox */
+    scrollbarWidth: "thin",
+    scrollbarColor: "#3658FA transparent",
+},
+
+    cardWrapper: {
+        flex: "0 0 300px",
+    },
+
+    nuloContainer: {
+        width: "100%",
+        maxWidth: "900px",
+        margin: "0 auto",
+        transform: "scale(0.85)",
+        transformOrigin: "center",
     },
 
     confirmWrapper: {
-        marginTop: "30px",
-        display: "flex",
-        justifyContent: "center",
-    },
+    marginTop: "20px",
+    marginBottom: "0px",
+    display: "flex",
+    justifyContent: "center",
+    paddingBottom: "0px",
+},
 
     confirmModal: {
         background: "white",

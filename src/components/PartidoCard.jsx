@@ -18,6 +18,7 @@ function PartidoCard({ partido, onClick, seleccionado }) {
       onClick={onClick}
       className={`partido-card${esNulo ? " partido-card--nulo" : ""}`}
       style={{
+        height: esNulo ? "120px" : "250px", // Ajusta estos valores a tu gusto
         border: seleccionado
           ? `7px solid ${partido.color || "#2f80ed"}`
           : esNulo

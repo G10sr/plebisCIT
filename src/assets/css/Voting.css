@@ -63,3 +63,33 @@
   color: #ffffff;
 
 }
+
+/* ===========================
+   Scroll horizontal partidos
+=========================== */
+
+/* Firefox */
+.filaPartidos{
+    scrollbar-width: thin;
+    scrollbar-color: #3658FA transparent;
+}
+
+/* Chrome, Edge, Opera */
+.filaPartidos::-webkit-scrollbar{
+    height:10px;
+}
+
+.filaPartidos::-webkit-scrollbar-track{
+    background:transparent;
+}
+
+.filaPartidos::-webkit-scrollbar-thumb{
+    background:#3658FA;
+    border-radius:20px;
+    border:2px solid transparent;
+    background-clip:padding-box;
+}
+
+.filaPartidos::-webkit-scrollbar-thumb:hover{
+    background:#2449ff;
+}
