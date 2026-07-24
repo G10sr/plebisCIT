@@ -192,10 +192,6 @@ async function getCsvUsers() {
   const files = fs.readdirSync(uploadDir)
     .filter(file => file.toLowerCase().endsWith(".csv"));
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   console.log("===== GET CSV USERS =====");
   console.log("CSV encontrados:", files);
 
@@ -204,58 +200,28 @@ async function getCsvUsers() {
   for (const file of files) {
     console.log("\nProcesando archivo:", file);
 
-<<<<<<< HEAD
-=======
-  const users = [];
-
-  for (const file of files) {
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
     const filePath = path.join(uploadDir, file);
 
     const content = fs.readFileSync(filePath, "utf8");
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     console.log("Primeros 200 caracteres:");
     console.log(content.substring(0, 200));
 
-=======
-    console.log(content.substring(0, 200));
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
-    console.log("Primeros 200 caracteres:");
-    console.log(content.substring(0, 200));
-
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
     const lines = content
       .split(/\r?\n/)
       .filter(Boolean);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
     console.log("Total líneas:", lines.length);
 
     if (lines.length < 2) {
       console.log("Archivo vacío o sin datos, se omite.");
       continue;
     }
-<<<<<<< HEAD
-=======
-    if (lines.length < 2) continue;
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
 
     let delimiter = ",";
     if (lines[0].includes(";")) delimiter = ";";
     else if (lines[0].includes("\t")) delimiter = "\t";
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     console.log("Delimitador detectado:", JSON.stringify(delimiter));
 
     const headers = lines[0]
@@ -263,21 +229,6 @@ async function getCsvUsers() {
       .map(h => h.trim().toLowerCase());
 
     console.log("Headers:", headers);
-=======
-    const headers = lines[0]
-      .split(delimiter)
-      .map(h => h.trim().toLowerCase());
-    console.log(headers);
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
-    console.log("Delimitador detectado:", JSON.stringify(delimiter));
-
-    const headers = lines[0]
-      .split(delimiter)
-      .map(h => h.trim().toLowerCase());
-
-    console.log("Headers:", headers);
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
 
     const indexes = {
       ced: headers.findIndex(h =>
@@ -288,8 +239,6 @@ async function getCsvUsers() {
       nombre: headers.findIndex(h => h.includes("nombre")),
       primerApellido: headers.findIndex(h => h.includes("primer apellido")),
       segundoApellido: headers.findIndex(h => h.includes("segundo apellido")),
-<<<<<<< HEAD
-<<<<<<< HEAD
       seccion: headers.findIndex(h => h.includes("seccion")),
     };
 
@@ -301,26 +250,6 @@ async function getCsvUsers() {
       indexes.seccion === -1
     ) {
       console.log("Faltan columnas obligatorias. Se omite este archivo.");
-=======
-      seccion: headers.findIndex(h => h.includes("seccion"))
-=======
-      seccion: headers.findIndex(h => h.includes("seccion")),
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
-    };
-
-<<<<<<< HEAD
-    if (indexes.ced === -1 || indexes.nombre === -1 || indexes.seccion === -1) {
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
-    console.log("Índices encontrados:", indexes);
-
-    if (
-      indexes.ced === -1 ||
-      indexes.nombre === -1 ||
-      indexes.seccion === -1
-    ) {
-      console.log("Faltan columnas obligatorias. Se omite este archivo.");
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
       continue;
     }
 
@@ -342,10 +271,6 @@ async function getCsvUsers() {
         seccion: values[indexes.seccion]?.trim()
       });
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
 
     console.log("Usuarios acumulados:", users.length);
   }
@@ -353,21 +278,10 @@ async function getCsvUsers() {
   console.log("TOTAL USUARIOS CSV:", users.length);
   console.log(users.slice(0, 10));
 
-<<<<<<< HEAD
-=======
-  }
-
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   return users;
 }
 
 async function syncVotingUsers(dataTable, grupos) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   console.log("\n==============================");
   console.log("SYNC VOTING USERS");
   console.log("==============================");
@@ -375,7 +289,6 @@ async function syncVotingUsers(dataTable, grupos) {
   console.log("Tabla:", dataTable);
   console.log("Grupos recibidos:", grupos);
 
-<<<<<<< HEAD
   const users = await getCsvUsers();
 
   console.log("Usuarios leídos del CSV:", users.length);
@@ -385,71 +298,29 @@ async function syncVotingUsers(dataTable, grupos) {
 
   console.log("Grupos recibidos:", JSON.stringify(grupos, null, 2));
 
-=======
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
-  const users = await getCsvUsers();
-
-  console.log("Usuarios leídos del CSV:", users.length);
-
-  const normalize = value =>
-    value?.trim().toLowerCase();
-
-<<<<<<< HEAD
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
-  console.log("Grupos recibidos:", JSON.stringify(grupos, null, 2));
-
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   const enabledSections = Object.keys(grupos)
     .filter(section => grupos[section])
     .map(normalize);
 
   console.log("Secciones habilitadas:", enabledSections);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
-  // Obtener grados actuales
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   const currentSections = await sql`
     SELECT DISTINCT grado
     FROM ${sql(dataTable)}
   `;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   console.log("Grados existentes en BD:", currentSections);
 
-=======
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
-  console.log("Grados existentes en BD:", currentSections);
-
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   const existingSections = currentSections.map(row =>
     normalize(row.grado)
   );
 
   console.log("Secciones actuales:", existingSections);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
-  // Solo borrar lo que ya no existe
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   const sectionsToDelete = existingSections.filter(
     section => !enabledSections.includes(section)
   );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   console.log("Secciones que se eliminarán:", sectionsToDelete);
 
   const deletingEverything =
@@ -474,45 +345,10 @@ async function syncVotingUsers(dataTable, grupos) {
     return;
   }
 
-=======
-=======
-  console.log("Secciones que se eliminarán:", sectionsToDelete);
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
-
-  const deletingEverything =
-    existingSections.length > 0 &&
-    sectionsToDelete.length === existingSections.length;
-
-
-  if (sectionsToDelete.length > 0) {
-    console.log("Eliminando usuarios de:", sectionsToDelete);
-
-    const deleted = await sql`
-      DELETE FROM ${sql(dataTable)}
-      WHERE LOWER(TRIM(grado)) = ANY(${sectionsToDelete})
-      RETURNING ced, grado
-    `;
-
-    console.log("Usuarios eliminados:", deleted.length);
-  }
-
-  if (!enabledSections.length) {
-    console.log("No hay grupos activos.");
-    return;
-  }
-
-<<<<<<< HEAD
-
-  // Usuarios de grupos activos
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   const enabledUsers = users.filter(user =>
     enabledSections.includes(normalize(user.seccion))
   );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   console.log("Usuarios que pertenecen a grupos activos:", enabledUsers.length);
   console.log("Primeros usuarios:", enabledUsers.slice(0, 10));
 
@@ -521,63 +357,25 @@ async function syncVotingUsers(dataTable, grupos) {
     return;
   }
 
-=======
-=======
-  console.log("Usuarios que pertenecen a grupos activos:", enabledUsers.length);
-  console.log("Primeros usuarios:", enabledUsers.slice(0, 10));
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
-
-  if (!enabledUsers.length) {
-    console.log("No hay usuarios para insertar.");
-    return;
-  }
-
-<<<<<<< HEAD
-
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
   const rows = enabledUsers.map(user => [
     user.ced,
     user.nombre,
     user.seccion.trim()
   ]);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   console.log("Filas a insertar:", rows.length);
   console.log(rows.slice(0, 10));
 
   const inserted = await sql`
-=======
-
-  await sql`
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
-  console.log("Filas a insertar:", rows.length);
-  console.log(rows.slice(0, 10));
-
-  const inserted = await sql`
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
     INSERT INTO ${sql(dataTable)}
     (ced, nombre, grado)
     VALUES ${sql(rows)}
     ON CONFLICT (ced) DO NOTHING
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
     RETURNING ced
   `;
 
   console.log("Usuarios insertados:", inserted.length);
   console.log("SYNC FINALIZADO");
-<<<<<<< HEAD
-=======
-  `;
->>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
-=======
->>>>>>> 635e64c (feat: Implementacion completa de CSV y base de Datos)
 }
 
 /* ─────────────────────────────────────────────
