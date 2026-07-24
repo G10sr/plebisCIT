@@ -192,6 +192,7 @@ async function getCsvUsers() {
   const files = fs.readdirSync(uploadDir)
     .filter(file => file.toLowerCase().endsWith(".csv"));
 
+<<<<<<< HEAD
   console.log("===== GET CSV USERS =====");
   console.log("CSV encontrados:", files);
 
@@ -200,28 +201,42 @@ async function getCsvUsers() {
   for (const file of files) {
     console.log("\nProcesando archivo:", file);
 
+=======
+  const users = [];
+
+  for (const file of files) {
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
     const filePath = path.join(uploadDir, file);
 
     const content = fs.readFileSync(filePath, "utf8");
 
+<<<<<<< HEAD
     console.log("Primeros 200 caracteres:");
     console.log(content.substring(0, 200));
 
+=======
+    console.log(content.substring(0, 200));
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
     const lines = content
       .split(/\r?\n/)
       .filter(Boolean);
 
+<<<<<<< HEAD
     console.log("Total líneas:", lines.length);
 
     if (lines.length < 2) {
       console.log("Archivo vacío o sin datos, se omite.");
       continue;
     }
+=======
+    if (lines.length < 2) continue;
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
 
     let delimiter = ",";
     if (lines[0].includes(";")) delimiter = ";";
     else if (lines[0].includes("\t")) delimiter = "\t";
 
+<<<<<<< HEAD
     console.log("Delimitador detectado:", JSON.stringify(delimiter));
 
     const headers = lines[0]
@@ -229,6 +244,12 @@ async function getCsvUsers() {
       .map(h => h.trim().toLowerCase());
 
     console.log("Headers:", headers);
+=======
+    const headers = lines[0]
+      .split(delimiter)
+      .map(h => h.trim().toLowerCase());
+    console.log(headers);
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
 
     const indexes = {
       ced: headers.findIndex(h =>
@@ -239,6 +260,7 @@ async function getCsvUsers() {
       nombre: headers.findIndex(h => h.includes("nombre")),
       primerApellido: headers.findIndex(h => h.includes("primer apellido")),
       segundoApellido: headers.findIndex(h => h.includes("segundo apellido")),
+<<<<<<< HEAD
       seccion: headers.findIndex(h => h.includes("seccion")),
     };
 
@@ -250,6 +272,13 @@ async function getCsvUsers() {
       indexes.seccion === -1
     ) {
       console.log("Faltan columnas obligatorias. Se omite este archivo.");
+=======
+      seccion: headers.findIndex(h => h.includes("seccion"))
+    };
+    console.log(indexes);
+
+    if (indexes.ced === -1 || indexes.nombre === -1 || indexes.seccion === -1) {
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
       continue;
     }
 
@@ -271,6 +300,7 @@ async function getCsvUsers() {
         seccion: values[indexes.seccion]?.trim()
       });
     }
+<<<<<<< HEAD
 
     console.log("Usuarios acumulados:", users.length);
   }
@@ -278,10 +308,15 @@ async function getCsvUsers() {
   console.log("TOTAL USUARIOS CSV:", users.length);
   console.log(users.slice(0, 10));
 
+=======
+  }
+
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
   return users;
 }
 
 async function syncVotingUsers(dataTable, grupos) {
+<<<<<<< HEAD
   console.log("\n==============================");
   console.log("SYNC VOTING USERS");
   console.log("==============================");
@@ -298,29 +333,51 @@ async function syncVotingUsers(dataTable, grupos) {
 
   console.log("Grupos recibidos:", JSON.stringify(grupos, null, 2));
 
+=======
+  const users = await getCsvUsers();
+
+  // Normalizar secciones
+  const normalize = (value) =>
+    value?.trim().toLowerCase();
+
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
   const enabledSections = Object.keys(grupos)
     .filter(section => grupos[section])
     .map(normalize);
 
   console.log("Secciones habilitadas:", enabledSections);
 
+<<<<<<< HEAD
+=======
+
+  // Obtener grados actuales
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
   const currentSections = await sql`
     SELECT DISTINCT grado
     FROM ${sql(dataTable)}
   `;
 
+<<<<<<< HEAD
   console.log("Grados existentes en BD:", currentSections);
 
+=======
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
   const existingSections = currentSections.map(row =>
     normalize(row.grado)
   );
 
   console.log("Secciones actuales:", existingSections);
 
+<<<<<<< HEAD
+=======
+
+  // Solo borrar lo que ya no existe
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
   const sectionsToDelete = existingSections.filter(
     section => !enabledSections.includes(section)
   );
 
+<<<<<<< HEAD
   console.log("Secciones que se eliminarán:", sectionsToDelete);
 
   const deletingEverything =
@@ -345,10 +402,44 @@ async function syncVotingUsers(dataTable, grupos) {
     return;
   }
 
+=======
+
+  console.log("Secciones que se borrarán:", sectionsToDelete);
+
+
+  // Protección contra borrar todo accidentalmente
+  if (
+    sectionsToDelete.length === existingSections.length &&
+    enabledSections.length > 0
+  ) {
+    console.error(
+      "ABORTADO: intento de borrar toda la tabla por diferencia de nombres"
+    );
+    return;
+  }
+
+
+  if (sectionsToDelete.length > 0) {
+    await sql`
+      DELETE FROM ${sql(dataTable)}
+      WHERE LOWER(TRIM(grado)) = ANY(${sectionsToDelete})
+    `;
+  }
+
+
+  // Si no hay grupos activos, ya terminamos
+  if (!enabledSections.length) {
+    return;
+  }
+
+
+  // Usuarios de grupos activos
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
   const enabledUsers = users.filter(user =>
     enabledSections.includes(normalize(user.seccion))
   );
 
+<<<<<<< HEAD
   console.log("Usuarios que pertenecen a grupos activos:", enabledUsers.length);
   console.log("Primeros usuarios:", enabledUsers.slice(0, 10));
 
@@ -357,25 +448,42 @@ async function syncVotingUsers(dataTable, grupos) {
     return;
   }
 
+=======
+
+  if (!enabledUsers.length) {
+    return;
+  }
+
+
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
   const rows = enabledUsers.map(user => [
     user.ced,
     user.nombre,
     user.seccion.trim()
   ]);
 
+<<<<<<< HEAD
   console.log("Filas a insertar:", rows.length);
   console.log(rows.slice(0, 10));
 
   const inserted = await sql`
+=======
+
+  await sql`
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
     INSERT INTO ${sql(dataTable)}
     (ced, nombre, grado)
     VALUES ${sql(rows)}
     ON CONFLICT (ced) DO NOTHING
+<<<<<<< HEAD
     RETURNING ced
   `;
 
   console.log("Usuarios insertados:", inserted.length);
   console.log("SYNC FINALIZADO");
+=======
+  `;
+>>>>>>> c61be17 (feat: Add CSV functionality and implement it with database)
 }
 
 /* ─────────────────────────────────────────────
