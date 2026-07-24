@@ -439,6 +439,7 @@ useEffect(() => {
       setFinal(formatDateTimeForInput(data.End_time));
       setOculto(data.Oculto ?? false);
       setVigente(data.Vigente ?? true);
+      setGrupos(data.grupos || {});
 
       if (data.options && data.options.length > 0) {
         setOptions(data.options.map(opt => ({

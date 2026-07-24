@@ -6,12 +6,14 @@ import "../assets/css/MenuVotingAdmin.css";
 import VoteListAdmin from "../components/VoteListAdmin";
 
 const CSV_GROUPS = [
-    { label: "Externos", aliases: ["externos", "11°", "11", "11o"] },
-    { label: "Profesores", aliases: ["profesores", "12°", "12", "12o"] },
+    { label: "Externos", aliases: ["externos"] },
+    { label: "Profesores", aliases: ["profesores", "profe", "prof"] },
     { label: "7°", aliases: ["7°", "7", "7o", "septimo", "septima"] },
     { label: "8°", aliases: ["8°", "8", "8o", "octavo", "octava"] },
     { label: "9°", aliases: ["9°", "9", "9o", "noveno", "novena"] },
     { label: "10°", aliases: ["10°", "10", "10o", "decimo", "decima"] },
+    { label: "11°", aliases: ["11°", "11", "11o", "undecimo", "undecima"] },
+    { label: "12°", aliases: ["12°", "12", "12o", "duodecimo", "duodecima", "duo", "duos"] }
 ];
 
 const SECTION_ORDER = ["Externos", "Profesores", "7°", "8°", "9°", "10°", "Sin sección"];

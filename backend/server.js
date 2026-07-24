@@ -188,6 +188,195 @@ app.get("/api/csv-sections", async (req, res) => {
   }
 });
 
+async function getCsvUsers() {
+  const files = fs.readdirSync(uploadDir)
+    .filter(file => file.toLowerCase().endsWith(".csv"));
+
+  console.log("===== GET CSV USERS =====");
+  console.log("CSV encontrados:", files);
+
+  const users = [];
+
+  for (const file of files) {
+    console.log("\nProcesando archivo:", file);
+
+    const filePath = path.join(uploadDir, file);
+
+    const content = fs.readFileSync(filePath, "utf8");
+
+    console.log("Primeros 200 caracteres:");
+    console.log(content.substring(0, 200));
+
+    const lines = content
+      .split(/\r?\n/)
+      .filter(Boolean);
+
+    console.log("Total líneas:", lines.length);
+
+    if (lines.length < 2) {
+      console.log("Archivo vacío o sin datos, se omite.");
+      continue;
+    }
+
+    let delimiter = ",";
+    if (lines[0].includes(";")) delimiter = ";";
+    else if (lines[0].includes("\t")) delimiter = "\t";
+
+    console.log("Delimitador detectado:", JSON.stringify(delimiter));
+
+    const headers = lines[0]
+      .split(delimiter)
+      .map(h => h.trim().toLowerCase());
+
+    console.log("Headers:", headers);
+
+    const indexes = {
+      ced: headers.findIndex(h =>
+        h.includes("identific") ||
+        h.includes("ced") ||
+        h.includes("id")
+      ),
+      nombre: headers.findIndex(h => h.includes("nombre")),
+      primerApellido: headers.findIndex(h => h.includes("primer apellido")),
+      segundoApellido: headers.findIndex(h => h.includes("segundo apellido")),
+      seccion: headers.findIndex(h => h.includes("seccion")),
+    };
+
+    console.log("Índices encontrados:", indexes);
+
+    if (
+      indexes.ced === -1 ||
+      indexes.nombre === -1 ||
+      indexes.seccion === -1
+    ) {
+      console.log("Faltan columnas obligatorias. Se omite este archivo.");
+      continue;
+    }
+
+    for (const line of lines.slice(1)) {
+      const values = line.split(delimiter);
+
+      const nombreCompleto = [
+        values[indexes.nombre],
+        values[indexes.primerApellido],
+        values[indexes.segundoApellido]
+      ]
+        .map(v => v?.trim())
+        .filter(Boolean)
+        .join(" ");
+
+      users.push({
+        ced: values[indexes.ced]?.trim(),
+        nombre: nombreCompleto,
+        seccion: values[indexes.seccion]?.trim()
+      });
+    }
+
+    console.log("Usuarios acumulados:", users.length);
+  }
+
+  console.log("TOTAL USUARIOS CSV:", users.length);
+  console.log(users.slice(0, 10));
+
+  return users;
+}
+
+async function syncVotingUsers(dataTable, grupos) {
+  console.log("\n==============================");
+  console.log("SYNC VOTING USERS");
+  console.log("==============================");
+
+  console.log("Tabla:", dataTable);
+  console.log("Grupos recibidos:", grupos);
+
+  const users = await getCsvUsers();
+
+  console.log("Usuarios leídos del CSV:", users.length);
+
+  const normalize = value =>
+    value?.trim().toLowerCase();
+
+  console.log("Grupos recibidos:", JSON.stringify(grupos, null, 2));
+
+  const enabledSections = Object.keys(grupos)
+    .filter(section => grupos[section])
+    .map(normalize);
+
+  console.log("Secciones habilitadas:", enabledSections);
+
+  const currentSections = await sql`
+    SELECT DISTINCT grado
+    FROM ${sql(dataTable)}
+  `;
+
+  console.log("Grados existentes en BD:", currentSections);
+
+  const existingSections = currentSections.map(row =>
+    normalize(row.grado)
+  );
+
+  console.log("Secciones actuales:", existingSections);
+
+  const sectionsToDelete = existingSections.filter(
+    section => !enabledSections.includes(section)
+  );
+
+  console.log("Secciones que se eliminarán:", sectionsToDelete);
+
+  const deletingEverything =
+    existingSections.length > 0 &&
+    sectionsToDelete.length === existingSections.length;
+
+
+  if (sectionsToDelete.length > 0) {
+    console.log("Eliminando usuarios de:", sectionsToDelete);
+
+    const deleted = await sql`
+      DELETE FROM ${sql(dataTable)}
+      WHERE LOWER(TRIM(grado)) = ANY(${sectionsToDelete})
+      RETURNING ced, grado
+    `;
+
+    console.log("Usuarios eliminados:", deleted.length);
+  }
+
+  if (!enabledSections.length) {
+    console.log("No hay grupos activos.");
+    return;
+  }
+
+  const enabledUsers = users.filter(user =>
+    enabledSections.includes(normalize(user.seccion))
+  );
+
+  console.log("Usuarios que pertenecen a grupos activos:", enabledUsers.length);
+  console.log("Primeros usuarios:", enabledUsers.slice(0, 10));
+
+  if (!enabledUsers.length) {
+    console.log("No hay usuarios para insertar.");
+    return;
+  }
+
+  const rows = enabledUsers.map(user => [
+    user.ced,
+    user.nombre,
+    user.seccion.trim()
+  ]);
+
+  console.log("Filas a insertar:", rows.length);
+  console.log(rows.slice(0, 10));
+
+  const inserted = await sql`
+    INSERT INTO ${sql(dataTable)}
+    (ced, nombre, grado)
+    VALUES ${sql(rows)}
+    ON CONFLICT (ced) DO NOTHING
+    RETURNING ced
+  `;
+
+  console.log("Usuarios insertados:", inserted.length);
+  console.log("SYNC FINALIZADO");
+}
 
 /* ─────────────────────────────────────────────
    LOGIN ADMIN
@@ -445,6 +634,7 @@ app.post("/api/voting/create", async (req, res) => {
       final,
       oculto,
       vigente,
+      grupos = {},
       options = [],
       adminUUID
     } = req.body;
@@ -578,6 +768,8 @@ app.post("/api/voting/create", async (req, res) => {
   `;
     }
 
+    await syncVotingUsers(dataTable, grupos);
+
     res.json({ success: true });
 
   } catch (err) {
@@ -595,16 +787,19 @@ app.put("/api/voting/update/:name", async (req, res) => {
     const { name } = req.params;
 
     const {
+      nombre,
       inicio,
       final,
       oculto,
       vigente,
+      grupos = {},
       options = [],
       adminUUID
     } = req.body;
 
     const clean = formatTableName(name);
     const optionsTable = `Vote_${clean}_Options`;
+    const dataTable = `Vote_${clean}_Data`;
 
     await sql`
       UPDATE "Votings_Config"
@@ -685,6 +880,7 @@ app.put("/api/voting/update/:name", async (req, res) => {
     ON CONFLICT ("Name") DO NOTHING
   `;
     }
+    await syncVotingUsers(dataTable, grupos);
 
     res.json({ success: true });
 
@@ -825,8 +1021,33 @@ app.get("/api/voting/:name", async (req, res) => {
       ORDER BY "ID"
     `;
 
+    // Obtener grupos activos
+    const dataTable = `Vote_${clean}_Data`;
+
+    let grupos = {};
+
+    try {
+      const sections = await sql`
+    SELECT DISTINCT grado
+    FROM ${sql(dataTable)}
+  `;
+
+      sections.forEach(row => {
+        if (row.grado) {
+          grupos[row.grado] = true;
+        }
+      });
+
+    } catch (err) {
+      console.log("No se pudieron cargar grupos:", err.message);
+    }
+
+
     res.json({
       ...voting[0],
+
+      grupos,
+
       options: options.map(opt => ({
         id: opt.ID,
         name: opt.Name,
